@@ -6,6 +6,8 @@ import 'package:student_app/theme/theme.dart';
 import 'package:student_app/widgets/custom_scaffold.dart';
 import 'package:flutter/material.dart';
 
+import '../firebase_authentication/firebase_auth_services.dart';
+
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
 
@@ -276,7 +278,7 @@ class _SignInScreenState extends State<SignInScreen> {
       if (user != null) {
         showToast(message: 'Sign in successful!');
         Navigator.push(
-            context, MaterialPageRoute(builder: (e) => const EmergencyNotifications()));
+            context, MaterialPageRoute(builder: (e) => ));
       } else {
         showToast(message: 'Sign in failed!');
       }

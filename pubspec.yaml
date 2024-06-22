@@ -40,6 +40,7 @@ dependencies:
   firebase_auth: ^5.1.0
   fluttertoast: ^8.2.6
   icons_plus: ^5.0.0
+  google_maps_flutter: ^2.6.1
 
 dev_dependencies:
   flutter_test:
