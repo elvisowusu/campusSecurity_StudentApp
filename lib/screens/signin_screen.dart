@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:student_app/Dashboard/Pattern/student_pattern.dart';
 import 'package:student_app/common/toast.dart';
 import 'package:student_app/screens/forgot_password_screen.dart';
 import 'package:student_app/screens/signup_screen.dart';
@@ -22,7 +23,6 @@ class _SignInScreenState extends State<SignInScreen> {
   bool _isSigningIn = false;
 
   final FirebaseAuthService _auth = FirebaseAuthService();
-  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -278,7 +278,8 @@ class _SignInScreenState extends State<SignInScreen> {
       if (user != null) {
         showToast(message: 'Sign in successful!');
         Navigator.push(
-            context, MaterialPageRoute(builder: (e) => ));
+            // ignore: use_build_context_synchronously
+            context, MaterialPageRoute(builder: (e) => const StudentPattern()));
       } else {
         showToast(message: 'Sign in failed!');
       }
