@@ -1,6 +1,6 @@
-import 'package:student_app/firebase_options.dart';
-import 'package:student_app/screens/welcome_screen.dart';
-import 'package:student_app/theme/theme.dart';
+import 'package:st_app/firebase_options.dart';
+import 'package:st_app/screens/welcome_screen.dart';
+import 'package:st_app/theme/theme.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
