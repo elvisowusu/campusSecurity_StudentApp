@@ -16,6 +16,8 @@ class _OldCasesState extends State<OldCases> {
   ];
 
   final TextEditingController _controller = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  final FocusNode _focusNode = FocusNode();
 
   void _sendMessage() {
     if (_controller.text.isNotEmpty) {
@@ -23,7 +25,38 @@ class _OldCasesState extends State<OldCases> {
         messages.add({'text': _controller.text, 'isSent': true});
         _controller.clear();
       });
+      _scrollToBottom();
     }
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode.addListener(() {
+      if (_focusNode.hasFocus) {
+        _scrollToBottom();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _scrollController.dispose();
+    _focusNode.dispose();
+    super.dispose();
   }
 
   @override
@@ -36,6 +69,7 @@ class _OldCasesState extends State<OldCases> {
         children: [
           Expanded(
             child: ListView.builder(
+              controller: _scrollController,
               padding: const EdgeInsets.all(8.0),
               itemCount: messages.length,
               itemBuilder: (context, index) {
@@ -69,9 +103,11 @@ class _OldCasesState extends State<OldCases> {
                 Expanded(
                   child: TextField(
                     controller: _controller,
+                    focusNode: _focusNode,
                     decoration: const InputDecoration(
                       hintText: 'Type a message',
                       border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.only(left: 16.0),
                     ),
                   ),
                 ),
