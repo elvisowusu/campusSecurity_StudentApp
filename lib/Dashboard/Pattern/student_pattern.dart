@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:student_app/Dashboard/Case Analysis/case_analysis.dart';
-import 'package:student_app/Dashboard/Old%20Cases/report_old_case.dart';
+import 'package:student_app/Dashboard/Old%20Cases/individual_chat_room.dart';
 class StudentPattern extends StatefulWidget {
   const StudentPattern({super.key});
 
@@ -24,7 +24,7 @@ class _StudentPatternState extends State<StudentPattern> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const OldCases()),
+            MaterialPageRoute(builder: (context) => const IndividualChatPage(contact: '1',)),
           );
         },
         tooltip: 'Report Case',
