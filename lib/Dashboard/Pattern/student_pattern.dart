@@ -17,7 +17,8 @@ class _StudentPatternState extends State<StudentPattern> {
       ),
       body: const Column(
         children: [
-          Text('Student Pattern'),
+          Text('Map will appear here'),
+          
         ],
       ),
       floatingActionButton: FloatingActionButton(
