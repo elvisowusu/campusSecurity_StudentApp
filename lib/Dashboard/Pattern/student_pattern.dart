@@ -25,7 +25,7 @@ class _StudentPatternState extends State<StudentPattern> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const IndividualChatPage(contact: '1',)),
+            MaterialPageRoute(builder: (context) => const IndividualChatRoom()),
           );
         },
         tooltip: 'Report Case',
