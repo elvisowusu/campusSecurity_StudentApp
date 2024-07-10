@@ -1,34 +1,19 @@
 import 'package:flutter/material.dart';
 
-class IndividualChatPage extends StatelessWidget {
-  final String contact;
+class IndividualChatRoom extends StatefulWidget {
+  const IndividualChatRoom({super.key});
 
-  const IndividualChatPage({super.key, required this.contact});
+  @override
+  State<IndividualChatRoom> createState() => _IndividualChatRoomState();
+}
 
+class _IndividualChatRoomState extends State<IndividualChatRoom> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(contact),
+        title: const Text('Individual Chat Room'),
       ),
-      body:  Stack(
-        children: [
-          const Image(
-            image: AssetImage('assets/images/chatbg.jpg'),
-            width: double.maxFinite,
-            height: double.maxFinite,
-            fit: BoxFit.cover,
-          ),
-          Column(
-            children: [
-              Expanded(
-                child: Container(
-                ),
-              ),
-            ],
-          )
-        ],
-      )
     );
   }
 }
