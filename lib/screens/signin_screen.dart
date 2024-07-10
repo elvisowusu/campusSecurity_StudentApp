@@ -23,12 +23,14 @@ class _SignInScreenState extends State<SignInScreen> {
   bool rememberPassword = true;
   //loader
   bool _isSigningIn = false;
+  bool _isSigningInWithGoogle = false;
 
   final FirebaseAuthService _auth = FirebaseAuthService();
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _referenceNumberController = TextEditingController();
+  final TextEditingController _referenceNumberController =
+      TextEditingController();
 
   // Define FocusNodes
   final FocusNode _emailFocusNode = FocusNode();
@@ -157,48 +159,49 @@ class _SignInScreenState extends State<SignInScreen> {
                             height: 20,
                           ),
                           // Reference Number
-                      TextFormField(
-                        controller: _referenceNumberController,
-                        focusNode: _referenceNumberFocusNode,
-                        keyboardType: TextInputType.number,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                          LengthLimitingTextInputFormatter(8),
-                        ],
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter Reference Number';
-                          } else if (value.length != 8) {
-                            return 'Reference Number must be 8 digits';
-                          }
-                          return null;
-                        },
-                        decoration: InputDecoration(
-                          label: const Text('Reference Number'),
-                          hintText: 'Enter Reference Number',
-                          hintStyle: const TextStyle(
-                            color: Colors.black26,
-                          ),
-                          errorText: _referenceNumberError,
-                          border: OutlineInputBorder(
-                            borderSide: const BorderSide(
-                              color: Colors.black12, // Default border color
+                          TextFormField(
+                            controller: _referenceNumberController,
+                            focusNode: _referenceNumberFocusNode,
+                            keyboardType: TextInputType.number,
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(8),
+                            ],
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter Reference Number';
+                              } else if (value.length != 8) {
+                                return 'Reference Number must be 8 digits';
+                              }
+                              return null;
+                            },
+                            decoration: InputDecoration(
+                              label: const Text('Reference Number'),
+                              hintText: 'Enter Reference Number',
+                              hintStyle: const TextStyle(
+                                color: Colors.black26,
+                              ),
+                              errorText: _referenceNumberError,
+                              border: OutlineInputBorder(
+                                borderSide: const BorderSide(
+                                  color: Colors.black12, // Default border color
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: const BorderSide(
+                                  color: Colors.black12, // Default border color
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                             ),
-                            borderRadius: BorderRadius.circular(10),
                           ),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(
-                              color: Colors.black12, // Default border color
-                            ),
-                            borderRadius: BorderRadius.circular(10),
+                          const SizedBox(
+                            height: 15.0,
                           ),
-                        ),
-                      ),
-                       const SizedBox(
-                        height: 15.0,
-                      ),
-                                                    TextFormField(
+                          TextFormField(
                             controller: _passwordController,
                             focusNode: _passwordFocusNode,
                             obscureText:
@@ -297,10 +300,46 @@ class _SignInScreenState extends State<SignInScreen> {
                                     : const Text('Sign In')),
                           ),
                           const SizedBox(
-                            height: 25,
+                            height: 10,
+                          ),
+                          GestureDetector(
+                            onTap: _signInWithGoogle,
+                            child: Container(
+                              width: double.infinity,
+                              height: 45,
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Center(
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    _isSigningInWithGoogle
+                                        ? const CircularProgressIndicator(
+                                            color: Colors.white,
+                                          )
+                                        : const Icon(
+                                            Icons.g_mobiledata_outlined,
+                                            color: Colors.white,
+                                          ),
+                                    const SizedBox(
+                                      width: 5,
+                                    ),
+                                    const Text(
+                                      "Sign in with Google",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
                           ),
                           const SizedBox(
-                            height: 15,
+                            height: 10,
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -336,68 +375,80 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 
   void _signIn() async {
-  if (_signInformKey.currentState!.validate()) {
-    // Show loader
-    setState(() {
-      _isSigningIn = true;
-    });
+    if (_signInformKey.currentState!.validate()) {
+      // Show loader
+      setState(() {
+        _isSigningIn = true;
+      });
 
-    String email = _emailController.text;
-    String password = _passwordController.text;
+      String email = _emailController.text;
+      String password = _passwordController.text;
 
-    // Sign in with email and password
-    User? user = await _auth.signIn(email, password);
+      // Sign in with email and password
+      User? user = await _auth.signIn(email, password);
 
-    setState(() {
-      _isSigningIn = false;
-    });
+      setState(() {
+        _isSigningIn = false;
+      });
 
-    if (user != null) {
-      // Fetch referenceNumber from Firestore
-      String referenceNumber = await _fetchReferenceNumber(user.uid);
+      if (user != null) {
+        // Fetch referenceNumber from Firestore
+        String referenceNumber = await _fetchReferenceNumber(user.uid);
 
-      if (referenceNumber.isNotEmpty) {
-        // Navigate to next screen passing referenceNumber
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => StudentPattern(referenceNumber: referenceNumber)),
-        );
-        showToast(message: 'Sign in successful!');
+        if (referenceNumber.isNotEmpty) {
+          // Navigate to next screen passing referenceNumber
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    StudentPattern(referenceNumber: referenceNumber)),
+          );
+          showToast(message: 'Sign in successful!');
+        } else {
+          showToast(message: 'Error: Reference number not found!');
+        }
       } else {
-        showToast(message: 'Error: Reference number not found!');
+        showToast(message: 'Sign in failed!');
       }
     } else {
-      showToast(message: 'Sign in failed!');
+      setState(() {
+        // Update error messages if form is not valid
+        _emailError =
+            _emailController.text.isEmpty ? 'Please enter Email' : null;
+        _passwordError =
+            _passwordController.text.isEmpty ? 'Please enter Password' : null;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please complete the form and agree to the terms.'),
+        ),
+      );
     }
-  } else {
-    setState(() {
-      // Update error messages if form is not valid
-      _emailError = _emailController.text.isEmpty ? 'Please enter Email' : null;
-      _passwordError = _passwordController.text.isEmpty ? 'Please enter Password' : null;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Please complete the form and agree to the terms.'),
-      ),
-    );
   }
-}
 
-Future<String> _fetchReferenceNumber(String userId) async {
-  try {
-    // Fetch reference number from Firestore
-    DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('users').doc(userId).get();
-    if (snapshot.exists) {
-      return (snapshot.data() as Map<String, dynamic>)['Reference number'] ?? '';
-    } else {
+  Future<String> _fetchReferenceNumber(String userId) async {
+    try {
+      // Fetch reference number from Firestore
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+      if (snapshot.exists) {
+        return (snapshot.data() as Map<String, dynamic>)['Reference number'] ??
+            '';
+      } else {
+        return '';
+      }
+    } catch (e) {
+      showToast(message: 'Error fetching reference number: $e');
       return '';
     }
-  } catch (e) {
-    print('Error fetching reference number: $e');
-    return '';
   }
-}
 
-
-  
+// Sign in with Google
+  void _signInWithGoogle() async {
+    setState(() {
+      _isSigningInWithGoogle = true;
+    });
+  }
 }
