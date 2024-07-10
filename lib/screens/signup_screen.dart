@@ -379,6 +379,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       if (user != null) {
         showToast(message: "Sign up successful");
         Navigator.push(
+            // ignore: use_build_context_synchronously
             context, MaterialPageRoute(builder: (e) => const SignInScreen()));
       } else {
         showToast(message: "Some error happened");
