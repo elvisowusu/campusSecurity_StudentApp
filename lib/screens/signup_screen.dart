@@ -6,6 +6,7 @@ import 'package:student_app/widgets/custom_scaffold.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../firebase_authentication/firebase_auth_services.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -25,20 +26,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _referenceNumberController =
-      TextEditingController();
-
+  final TextEditingController _referenceNumberController = TextEditingController();
+  final TextEditingController _phoneNumberController = TextEditingController();
   // Define FocusNodes
   final FocusNode _fullNameFocusNode = FocusNode();
   final FocusNode _emailFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
   final FocusNode _referenceNumberFocusNode = FocusNode();
+  final FocusNode _phoneNumberFocusNode = FocusNode();
 
   // Track error messages for fields
   String? _fullNameError;
   String? _emailError;
   String? _passwordError;
   String? _referenceNumberError;
+  String? _phoneNumberError;
 
   @override
   void initState() {
@@ -76,7 +78,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
         });
       }
     });
+
+    _phoneNumberFocusNode.addListener((){
+    if(_phoneNumberFocusNode.hasFocus){
+      setState(() {
+        _phoneNumberError = null;
+      });
+    }
+  });
   }
+
+  
+
 
   @override
   void dispose() {
@@ -84,10 +97,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _referenceNumberController.dispose();
+    _phoneNumberController.dispose();
     _fullNameFocusNode.dispose();
     _emailFocusNode.dispose();
     _passwordFocusNode.dispose();
     _referenceNumberFocusNode.dispose();
+    _phoneNumberFocusNode.dispose();
     super.dispose();
   }
 
@@ -208,6 +223,48 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         ),
                       ),
                        const SizedBox(
+                        height: 15.0,
+                      ),
+                      // Phone Number
+                      TextFormField(
+                        controller: _phoneNumberController,
+                        focusNode: _phoneNumberFocusNode,
+                        keyboardType: TextInputType.number,
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(10),
+                        ],
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter Phone Number';
+                          } else if (value.length != 10) {
+                            return 'Invalid phone number';
+                          }
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                          label: const Text('Phone Number'),
+                          hintText: 'Enter Phone Number',
+                          hintStyle: const TextStyle(
+                            color: Colors.black26,
+                          ),
+                          errorText: _phoneNumberError,
+                          border: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: Colors.black12, // Default border color
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: Colors.black12, // Default border color
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(
                         height: 15.0,
                       ),
                       // Email
@@ -424,9 +481,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
       setState(() {
         _isSigningUp = true;
       });
-
+      
+      String fullName = _fullNameController.text;
       String email = _emailController.text;
       String password = _passwordController.text;
+      String referenceNumber = _referenceNumberController.text;
+      String phoneNumber = _phoneNumberController.text;
+    
 
       User? user = await _auth.signUp(email, password);
       setState(() {
@@ -434,6 +495,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
       });
 
       if (user != null) {
+         await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'fullName': fullName,
+          'Reference number': referenceNumber,
+          'email': email,
+          'role': 'Student',
+          'phoneNumber': phoneNumber,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
         showToast(message: "Sign up successful");
         Navigator.push(
             // ignore: use_build_context_synchronously

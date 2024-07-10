@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 import 'package:student_app/Dashboard/Pattern/student_pattern.dart';
 import 'package:student_app/common/toast.dart';
 import 'package:student_app/screens/forgot_password_screen.dart';
@@ -26,14 +28,17 @@ class _SignInScreenState extends State<SignInScreen> {
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _referenceNumberController = TextEditingController();
 
   // Define FocusNodes
   final FocusNode _emailFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
+  final FocusNode _referenceNumberFocusNode = FocusNode();
 
   // Track error messages for fields
   String? _emailError;
   String? _passwordError;
+  String? _referenceNumberError;
 
   @override
   void initState() {
@@ -55,14 +60,24 @@ class _SignInScreenState extends State<SignInScreen> {
         });
       }
     });
+
+    _referenceNumberFocusNode.addListener(() {
+      if (_referenceNumberFocusNode.hasFocus) {
+        setState(() {
+          _referenceNumberError = null;
+        });
+      }
+    });
   }
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _referenceNumberController.dispose();
     _emailFocusNode.dispose();
     _passwordFocusNode.dispose();
+    _referenceNumberFocusNode.dispose();
     super.dispose();
   }
 
@@ -138,6 +153,48 @@ class _SignInScreenState extends State<SignInScreen> {
                           const SizedBox(
                             height: 20,
                           ),
+                          // Reference Number
+                      TextFormField(
+                        controller: _referenceNumberController,
+                        focusNode: _referenceNumberFocusNode,
+                        keyboardType: TextInputType.number,
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(8),
+                        ],
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter Reference Number';
+                          } else if (value.length != 8) {
+                            return 'Reference Number must be 8 digits';
+                          }
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                          label: const Text('Reference Number'),
+                          hintText: 'Enter Reference Number',
+                          hintStyle: const TextStyle(
+                            color: Colors.black26,
+                          ),
+                          errorText: _referenceNumberError,
+                          border: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: Colors.black12, // Default border color
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: Colors.black12, // Default border color
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                       const SizedBox(
+                        height: 15.0,
+                      ),
                           TextFormField(
                             controller: _passwordController,
                             focusNode: _passwordFocusNode,
@@ -261,42 +318,68 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 
   void _signIn() async {
-    if (_signInformKey.currentState!.validate()) {
-      //loader
-      setState(() {
-        _isSigningIn = true;
-      });
+  if (_signInformKey.currentState!.validate()) {
+    // Show loader
+    setState(() {
+      _isSigningIn = true;
+    });
 
-      String email = _emailController.text;
-      String password = _passwordController.text;
+    String email = _emailController.text;
+    String password = _passwordController.text;
 
-      User? user = await _auth.signIn(email, password);
-      setState(() {
-        _isSigningIn = false;
-      });
+    // Sign in with email and password
+    User? user = await _auth.signIn(email, password);
 
-      if (user != null) {
-        showToast(message: 'Sign in successful!');
+    setState(() {
+      _isSigningIn = false;
+    });
+
+    if (user != null) {
+      // Fetch referenceNumber from Firestore
+      String referenceNumber = await _fetchReferenceNumber(user.uid);
+
+      if (referenceNumber.isNotEmpty) {
+        // Navigate to next screen passing referenceNumber
         Navigator.push(
-            // ignore: use_build_context_synchronously
-            context, MaterialPageRoute(builder: (e) => const StudentPattern()));
+          context,
+          MaterialPageRoute(builder: (context) => StudentPattern(referenceNumber: referenceNumber)),
+        );
+        showToast(message: 'Sign in successful!');
       } else {
-        showToast(message: 'Sign in failed!');
+        showToast(message: 'Error: Reference number not found!');
       }
     } else {
-      setState(() {
-        // Update error messages if form is not valid
-        _emailError =
-            _emailController.text.isEmpty ? 'Please enter Email' : null;
-        _passwordError =
-            _passwordController.text.isEmpty ? 'Please enter Password' : null;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Please complete the form and agree to the terms.')),
-      );
+      showToast(message: 'Sign in failed!');
     }
+  } else {
+    setState(() {
+      // Update error messages if form is not valid
+      _emailError = _emailController.text.isEmpty ? 'Please enter Email' : null;
+      _passwordError = _passwordController.text.isEmpty ? 'Please enter Password' : null;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Please complete the form and agree to the terms.'),
+      ),
+    );
   }
+}
+
+Future<String> _fetchReferenceNumber(String userId) async {
+  try {
+    // Fetch reference number from Firestore
+    DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+    if (snapshot.exists) {
+      return (snapshot.data() as Map<String, dynamic>)['Reference number'] ?? '';
+    } else {
+      return '';
+    }
+  } catch (e) {
+    print('Error fetching reference number: $e');
+    return '';
+  }
+}
+
 
   
 }

@@ -41,6 +41,7 @@ dependencies:
   fluttertoast: ^8.2.6
   icons_plus: ^5.0.0
   google_maps_flutter: ^2.6.1
+  cloud_firestore: ^5.1.0
 
 dev_dependencies:
   flutter_test:

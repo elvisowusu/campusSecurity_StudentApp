@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:student_app/Dashboard/Case Analysis/case_analysis.dart';
 import 'package:student_app/Dashboard/Old%20Cases/individual_chat_room.dart';
+
 class StudentPattern extends StatefulWidget {
-  const StudentPattern({super.key});
+  final String referenceNumber; // Add referenceNumber parameter
+
+  const StudentPattern({super.key, required this.referenceNumber});
 
   @override
   State<StudentPattern> createState() => _StudentPatternState();
@@ -13,12 +16,11 @@ class _StudentPatternState extends State<StudentPattern> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Student Pattern'),
+        title: Text('Welcome -${widget.referenceNumber}'), // Use referenceNumber in the title
       ),
       body: const Column(
         children: [
           Text('Map will appear here'),
-          
         ],
       ),
       floatingActionButton: FloatingActionButton(
