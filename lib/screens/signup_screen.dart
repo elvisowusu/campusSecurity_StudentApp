@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:student_app/common/toast.dart';
 import 'package:student_app/screens/signin_screen.dart';
 import 'package:student_app/theme/theme.dart';
@@ -24,16 +25,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _referenceNumberController =
+      TextEditingController();
 
   // Define FocusNodes
   final FocusNode _fullNameFocusNode = FocusNode();
   final FocusNode _emailFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
+  final FocusNode _referenceNumberFocusNode = FocusNode();
 
   // Track error messages for fields
   String? _fullNameError;
   String? _emailError;
   String? _passwordError;
+  String? _referenceNumberError;
 
   @override
   void initState() {
@@ -63,6 +68,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
         });
       }
     });
+
+    _referenceNumberFocusNode.addListener(() {
+      if (_referenceNumberFocusNode.hasFocus) {
+        setState(() {
+          _referenceNumberError = null;
+        });
+      }
+    });
   }
 
   @override
@@ -70,9 +83,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _fullNameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _referenceNumberController.dispose();
     _fullNameFocusNode.dispose();
     _emailFocusNode.dispose();
     _passwordFocusNode.dispose();
+    _referenceNumberFocusNode.dispose();
     super.dispose();
   }
 
@@ -151,6 +166,48 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         ),
                       ),
                       const SizedBox(
+                        height: 15.0,
+                      ),
+                      // Reference Number
+                      TextFormField(
+                        controller: _referenceNumberController,
+                        focusNode: _referenceNumberFocusNode,
+                        keyboardType: TextInputType.number,
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(8),
+                        ],
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter Reference Number';
+                          } else if (value.length != 8) {
+                            return 'Reference Number must be 8 digits';
+                          }
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                          label: const Text('Reference Number'),
+                          hintText: 'Enter Reference Number',
+                          hintStyle: const TextStyle(
+                            color: Colors.black26,
+                          ),
+                          errorText: _referenceNumberError,
+                          border: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: Colors.black12, // Default border color
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: Colors.black12, // Default border color
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                       const SizedBox(
                         height: 15.0,
                       ),
                       // Email
@@ -380,16 +437,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
         showToast(message: "Sign up successful");
         Navigator.push(
             // ignore: use_build_context_synchronously
-            context, MaterialPageRoute(builder: (e) => const SignInScreen()));
+            context,
+            MaterialPageRoute(builder: (e) => const SignInScreen()));
       } else {
         showToast(message: "Some error happened");
       }
     } else {
       setState(() {
         // Update error messages if form is not valid
-        _fullNameError = _fullNameController.text.isEmpty ? 'Please enter Full name' : null;
-        _emailError = _emailController.text.isEmpty ? 'Please enter Email' : null;
-        _passwordError = _passwordController.text.isEmpty ? 'Please enter Password' : null;
+        _fullNameError =
+            _fullNameController.text.isEmpty ? 'Please enter Full name' : null;
+        _referenceNumberError = _referenceNumberController.text.isEmpty
+            ? 'Please enter Reference Number'
+            : null;
+        _emailError =
+            _emailController.text.isEmpty ? 'Please enter Email' : null;
+        _passwordError =
+            _passwordController.text.isEmpty ? 'Please enter Password' : null;
       });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
