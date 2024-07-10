@@ -26,7 +26,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _referenceNumberController = TextEditingController();
+  final TextEditingController _referenceNumberController =
+      TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
   // Define FocusNodes
   final FocusNode _fullNameFocusNode = FocusNode();
@@ -41,6 +42,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
   String? _passwordError;
   String? _referenceNumberError;
   String? _phoneNumberError;
+
+  // Flag for password visibility
+  bool _showPassword = false;
 
   @override
   void initState() {
@@ -79,17 +83,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
       }
     });
 
-    _phoneNumberFocusNode.addListener((){
-    if(_phoneNumberFocusNode.hasFocus){
-      setState(() {
-        _phoneNumberError = null;
-      });
-    }
-  });
+    _phoneNumberFocusNode.addListener(() {
+      if (_phoneNumberFocusNode.hasFocus) {
+        setState(() {
+          _phoneNumberError = null;
+        });
+      }
+    });
   }
-
-  
-
 
   @override
   void dispose() {
@@ -222,7 +223,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           ),
                         ),
                       ),
-                       const SizedBox(
+                      const SizedBox(
                         height: 15.0,
                       ),
                       // Phone Number
@@ -306,7 +307,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       TextFormField(
                         controller: _passwordController,
                         focusNode: _passwordFocusNode,
-                        obscureText: true,
+                        obscureText:
+                            !_showPassword, // Toggle visibility based on _showPassword flag
                         obscuringCharacter: '*',
                         autovalidateMode: AutovalidateMode.onUserInteraction,
                         validator: (value) {
@@ -318,21 +320,32 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         decoration: InputDecoration(
                           label: const Text('Password'),
                           hintText: 'Enter Password',
-                          hintStyle: const TextStyle(
-                            color: Colors.black26,
-                          ),
+                          hintStyle: const TextStyle(color: Colors.black26),
                           errorText: _passwordError,
                           border: OutlineInputBorder(
                             borderSide: const BorderSide(
-                              color: Colors.black12, // Default border color
+                              color: Colors.black12,
                             ),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderSide: const BorderSide(
-                              color: Colors.black12, // Default border color
+                              color: Colors.black12,
                             ),
                             borderRadius: BorderRadius.circular(10),
+                          ),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _showPassword
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                              color: lightColorScheme.primary,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _showPassword = !_showPassword;
+                              });
+                            },
                           ),
                         ),
                       ),
@@ -481,13 +494,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
       setState(() {
         _isSigningUp = true;
       });
-      
+
       String fullName = _fullNameController.text;
       String email = _emailController.text;
       String password = _passwordController.text;
       String referenceNumber = _referenceNumberController.text;
       String phoneNumber = _phoneNumberController.text;
-    
 
       User? user = await _auth.signUp(email, password);
       setState(() {
@@ -495,7 +507,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       });
 
       if (user != null) {
-         await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
           'fullName': fullName,
           'Reference number': referenceNumber,
           'email': email,

@@ -40,6 +40,9 @@ class _SignInScreenState extends State<SignInScreen> {
   String? _passwordError;
   String? _referenceNumberError;
 
+  // Flag for password visibility
+  bool _showPassword = false;
+
   @override
   void initState() {
     super.initState();
@@ -195,10 +198,11 @@ class _SignInScreenState extends State<SignInScreen> {
                        const SizedBox(
                         height: 15.0,
                       ),
-                          TextFormField(
+                                                    TextFormField(
                             controller: _passwordController,
                             focusNode: _passwordFocusNode,
-                            obscureText: true,
+                            obscureText:
+                                !_showPassword, // Toggle visibility based on _showPassword flag
                             obscuringCharacter: '*',
                             autovalidateMode:
                                 AutovalidateMode.onUserInteraction,
@@ -209,22 +213,36 @@ class _SignInScreenState extends State<SignInScreen> {
                               return null;
                             },
                             decoration: InputDecoration(
-                                label: const Text('Password'),
-                                hintText: 'Enter Password',
-                                hintStyle: const TextStyle(
-                                  color: Colors.black26,
+                              label: const Text('Password'),
+                              hintText: 'Enter Password',
+                              hintStyle: const TextStyle(color: Colors.black26),
+                              errorText: _passwordError,
+                              border: OutlineInputBorder(
+                                borderSide: const BorderSide(
+                                  color: Colors.black12,
                                 ),
-                                errorText: _passwordError,
-                                border: OutlineInputBorder(
-                                    borderSide:
-                                        const BorderSide(color: Colors.black12),
-                                    borderRadius: BorderRadius.circular(10)),
-                                enabledBorder: OutlineInputBorder(
-                                  borderSide: const BorderSide(
-                                    color: Colors.black12,
-                                  ),
-                                  borderRadius: BorderRadius.circular(10),
-                                )),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: const BorderSide(
+                                  color: Colors.black12,
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _showPassword
+                                      ? Icons.visibility
+                                      : Icons.visibility_off,
+                                  color: lightColorScheme.primary,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _showPassword = !_showPassword;
+                                  });
+                                },
+                              ),
+                            ),
                           ),
                           const SizedBox(
                             height: 20,
