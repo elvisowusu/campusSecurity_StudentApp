@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:student_app/Dashboard/Old%20Cases/individual_chat_room.dart';
 import 'package:student_app/common/enum/chat_services.dart';
 
-
 class StudentPattern extends StatefulWidget {
   final String referenceNumber;
 
@@ -13,7 +12,7 @@ class StudentPattern extends StatefulWidget {
 }
 
 class _StudentPatternState extends State<StudentPattern> {
-  final ChatService _chatService = ChatService(); // Initialize the ChatService
+  final ChatService _chatService = ChatService();
 
   void _navigateToChat(BuildContext context) async {
     String? counsellorId = await _chatService.getAssignedCounsellor();
@@ -43,7 +42,7 @@ class _StudentPatternState extends State<StudentPattern> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: ()=> _navigateToChat(context),
+        onPressed: () => _navigateToChat(context),
         tooltip: 'Chat with Counsellor',
         child: const Icon(Icons.chat_rounded),
       ),
