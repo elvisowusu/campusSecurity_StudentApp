@@ -1,5 +1,5 @@
 import 'package:student_app/firebase_options.dart';
-import 'package:student_app/screens/welcome_screen.dart';
+import 'package:student_app/screens/splash_screen.dart';
 import 'package:student_app/theme/theme.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: lightMode,
-      home: const  WelcomeScreen(),
+      home: const  SplashScreen(),
     );
   }
 }

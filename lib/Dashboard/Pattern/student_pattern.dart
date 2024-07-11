@@ -43,7 +43,7 @@ class _StudentPatternState extends State<StudentPattern> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _navigateToChat(context),
+        onPressed: ()=> _navigateToChat(context),
         tooltip: 'Chat with Counsellor',
         child: const Icon(Icons.chat_rounded),
       ),
