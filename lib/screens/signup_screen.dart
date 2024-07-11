@@ -20,6 +20,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool agreePersonalData = true;
   // Loader
   bool _isSigningUp = false;
+  bool _isSigningUpWithGoogle = false;
 
   final FirebaseAuthService _auth = FirebaseAuthService();
 
@@ -490,6 +491,27 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   void _signUp() async {
     if (_signUpFormKey.currentState!.validate() && agreePersonalData) {
+      // Validate phone number
+    if (_phoneNumberController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter Phone Number.'),
+        ),
+      );
+      return;
+    }
+
+    // Validate Ghanaian phone number format
+    final ghanaPhoneNumberRegex = RegExp(r'^[0][2-9][0-9]{8}$');
+    if (!ghanaPhoneNumberRegex.hasMatch(_phoneNumberController.text)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Invalid Ghanaian Phone Number.'),
+        ),
+      );
+      return;
+    }
+
       //loader
       setState(() {
         _isSigningUp = true;
@@ -540,6 +562,88 @@ class _SignUpScreenState extends State<SignUpScreen> {
         const SnackBar(
             content: Text('Please complete the form and agree to the terms.')),
       );
+    }
+  }
+
+  // Sign up with Google
+  void _signUpWithGoogle() async {
+    // Validate phone number
+    if (_phoneNumberController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter Phone Number.'),
+        ),
+      );
+      return;
+    }
+
+    // Validate Ghanaian phone number format
+    final ghanaPhoneNumberRegex = RegExp(r'^[0][2-9][0-9]{8}$');
+    if (!ghanaPhoneNumberRegex.hasMatch(_phoneNumberController.text)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Invalid Ghanaian Phone Number.'),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isSigningUpWithGoogle = true;
+    });
+    String referenceNumber = _referenceNumberController.text;
+    String phoneNumber = _phoneNumberController.text;
+
+    try {
+      // Perform Google sign-in
+      User? user = await FirebaseAuthService().signInWithGoogle();
+
+      if (user != null) {
+        // Check if user already exists in the database
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+
+        if (userDoc.exists) {
+          // User already exists, handle accordingly (e.g., log in the user)
+          showToast(message: "Google account already exists!");
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (e) => const SignInScreen()),
+          );
+        } else {
+          // Add user to the database
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .set({
+            'fullName': user.displayName,
+            'email': user.email,
+            'role': 'Student',
+            'Reference number': referenceNumber,
+            'phoneNumber': phoneNumber,
+            'createdAt': FieldValue.serverTimestamp(),
+          });
+          showToast(message: "Sign up successful");
+          setState(() {
+            _isSigningUpWithGoogle = false;
+          });
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (e) => const SignInScreen()),
+          );
+        }
+      } else {
+        showToast(message: "Some error happened");
+      }
+    } catch (e) {
+      showToast(message: "Error signing up with Google: $e");
+      showToast(message: "Failed to sign up with Google.");
+    } finally {
+      setState(() {
+        _isSigningUpWithGoogle = false;
+      });
     }
   }
 }

@@ -447,8 +447,32 @@ class _SignInScreenState extends State<SignInScreen> {
 
 // Sign in with Google
   void _signInWithGoogle() async {
+    FirebaseAuthService _authService = FirebaseAuthService();
     setState(() {
       _isSigningInWithGoogle = true;
     });
+    User? user = await _authService.signInWithGoogle();
+    setState(() {
+      _isSigningInWithGoogle = false;
+    });
+    if (user != null) {
+      // Fetch referenceNumber from Firestore
+      String referenceNumber = await _fetchReferenceNumber(user.uid);
+
+      if (referenceNumber.isNotEmpty) {
+        // Navigate to next screen passing referenceNumber
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) =>
+                  StudentPattern(referenceNumber: referenceNumber)),
+        );
+        showToast(message: 'Sign in successful!');
+      } else {
+        showToast(message: 'Error: Reference number not found!');
+      }
+    } else {
+      showToast(message: 'Sign in failed!');
+    }
   }
 }
