@@ -43,6 +43,7 @@ dependencies:
   google_maps_flutter: ^2.6.1
   cloud_firestore: ^5.1.0
   google_sign_in: ^6.2.1
+  font_awesome_flutter: ^10.7.0
 
 dev_dependencies:
   flutter_test:

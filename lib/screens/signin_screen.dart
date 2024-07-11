@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:student_app/Dashboard/Pattern/student_pattern.dart';
 import 'package:student_app/common/toast.dart';
 import 'package:student_app/screens/forgot_password_screen.dart';
@@ -288,56 +289,107 @@ class _SignInScreenState extends State<SignInScreen> {
                           const SizedBox(
                             height: 20,
                           ),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                                onPressed: _signIn,
-                                //loading indicator
-                                child: _isSigningIn
+                          // SignIn button
+                      GestureDetector(
+                        onTap: _signIn,
+                        child: Container(
+                          width: double.infinity,
+                          height: 45,
+                          decoration: BoxDecoration(
+                            color: Colors.blue,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _isSigningIn
                                     ? const CircularProgressIndicator(
                                         color: Colors.white,
                                       )
-                                    : const Text('Sign In')),
-                          ),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          GestureDetector(
-                            onTap: _signInWithGoogle,
-                            child: Container(
-                              width: double.infinity,
-                              height: 45,
-                              decoration: BoxDecoration(
-                                color: Colors.red,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Center(
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    _isSigningInWithGoogle
-                                        ? const CircularProgressIndicator(
-                                            color: Colors.white,
-                                          )
-                                        : const Icon(
-                                            Icons.g_mobiledata_outlined,
-                                            color: Colors.white,
-                                          ),
-                                    const SizedBox(
-                                      width: 5,
-                                    ),
-                                    const Text(
-                                      "Sign in with Google",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
+                                    : const Text(
+                                        'Sign in',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 5.0,
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Divider(
+                              thickness: 0.7,
+                              color: Colors.grey.withOpacity(0.5),
+                            ),
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(
+                              vertical: 0,
+                              horizontal: 10,
+                            ),
+                            child: Text(
+                              'Or',
+                              style: TextStyle(
+                                color: Colors.black45,
                               ),
                             ),
                           ),
+                          Expanded(
+                            child: Divider(
+                              thickness: 0.7,
+                              color: Colors.grey.withOpacity(0.5),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 5.0,
+                      ),
+                      // Sign in with Google
+                      GestureDetector(
+                        onTap: _signInWithGoogle,
+                        child: Container(
+                          width: double.infinity,
+                          height: 45,
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _isSigningInWithGoogle
+                                    ? const CircularProgressIndicator(
+                                        color: Colors.white,
+                                      )
+                                    : const Icon(
+                                        FontAwesomeIcons.google,
+                                        color: Colors.white,
+                                      ),
+                                const SizedBox(
+                                  width: 5,
+                                ),
+                                const Text(
+                                  "Sign in with Google",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
                           const SizedBox(
                             height: 10,
                           ),

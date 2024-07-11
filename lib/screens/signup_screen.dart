@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../firebase_authentication/firebase_auth_services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -384,24 +385,39 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         height: 15.0,
                       ),
                       // Signup button
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: _signUp,
-                          //loading indicator
-                          child: _isSigningUp
-                              ? const CircularProgressIndicator(
-                                  color: Colors.white,
-                                )
-                              : const Text('Sign up'),
+                      GestureDetector(
+                        onTap: _signUp,
+                        child: Container(
+                          width: double.infinity,
+                          height: 45,
+                          decoration: BoxDecoration(
+                            color: Colors.blue,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _isSigningUp
+                                    ? const CircularProgressIndicator(
+                                        color: Colors.white,
+                                      )
+                                    : const Text(
+                                        'Sign up',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(
-                        height: 15.0,
+                        height: 5.0,
                       ),
-                      // Sign up divider
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Expanded(
                             child: Divider(
@@ -415,7 +431,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               horizontal: 10,
                             ),
                             child: Text(
-                              'Sign up with',
+                              'Or',
                               style: TextStyle(
                                 color: Colors.black45,
                               ),
@@ -433,18 +449,41 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         height: 5.0,
                       ),
                       // Sign up social media logo
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          IconButton(
-                            onPressed: () {},
-                            icon: const Icon(
-                              Icons.g_mobiledata,
-                              size: 40,
-                              color: Color.fromARGB(255, 57, 232, 51),
+                      GestureDetector(
+                        onTap: _signUpWithGoogle,
+                        child: Container(
+                          width: double.infinity,
+                          height: 45,
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _isSigningUpWithGoogle
+                                    ? const CircularProgressIndicator(
+                                        color: Colors.white,
+                                      )
+                                    : const Icon(
+                                        FontAwesomeIcons.google,
+                                        color: Colors.white,
+                                      ),
+                                const SizedBox(
+                                  width: 5,
+                                ),
+                                const Text(
+                                  "Sign up with Google",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
+                        ),
                       ),
                       const SizedBox(
                         height: 15.0,
