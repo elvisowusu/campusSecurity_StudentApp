@@ -616,8 +616,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 }
 
-
-// Function to get a random counsellor ID
+// Function to get a random counsellor ID who has fewer than 20 students
 Future<String> _getDefaultCounsellorId() async {
   try {
     // Query all counsellors
@@ -632,9 +631,33 @@ Future<String> _getDefaultCounsellorId() async {
       return ''; // Return an empty string or handle as needed
     }
 
-    // Generate a random index to select a counsellor
-    int randomIndex = Random().nextInt(counsellorsSnapshot.docs.length);
-    String randomCounsellorId = counsellorsSnapshot.docs[randomIndex].id;
+    // List to store counsellors with fewer than 20 students
+    List<String> eligibleCounsellors = [];
+
+    // Iterate through counsellors and check their student count
+    for (var doc in counsellorsSnapshot.docs) {
+      String counsellorId = doc.id;
+
+      // Query the number of students assigned to the counsellor
+      QuerySnapshot studentCountSnapshot = await FirebaseFirestore.instance
+          .collection('students')
+          .where('counsellorId', isEqualTo: counsellorId)
+          .get();
+
+      if (studentCountSnapshot.size < 20) {
+        eligibleCounsellors.add(counsellorId);
+      }
+    }
+
+    // Check if there are any eligible counsellors
+    if (eligibleCounsellors.isEmpty) {
+      showToast(message: "All counsellors are currently full");
+      return ''; // Return an empty string or handle as needed
+    }
+
+    // Generate a random index to select a counsellor from eligible counsellors
+    int randomIndex = Random().nextInt(eligibleCounsellors.length);
+    String randomCounsellorId = eligibleCounsellors[randomIndex];
 
     return randomCounsellorId; // Return the ID of the randomly selected counsellor
   } catch (e) {
@@ -642,6 +665,7 @@ Future<String> _getDefaultCounsellorId() async {
     return ''; // Return an empty string or handle as needed
   }
 }
+
 
   // Sign up with Google
   void _signUpWithGoogle() async {

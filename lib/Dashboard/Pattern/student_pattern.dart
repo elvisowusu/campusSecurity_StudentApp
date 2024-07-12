@@ -34,20 +34,20 @@ class StudentPattern extends StatelessWidget {
           }
 
           var data = snapshot.data!.data() as Map<String, dynamic>;
-          var contactId = data['assignedCounsellor'];
+          var counselorId = data['assignedCounsellor'];
 
           return FloatingActionButton(
-            onPressed: contactId == null
+            onPressed: counselorId == null
                 ? null
                 : () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => IndividualChatPage(contactId: contactId),
+                        builder: (context) => IndividualChatPage(counselorId: counselorId),
                       ),
                     );
                   },
-            tooltip: contactId == null
+            tooltip: counselorId == null
                 ? 'No counsellor assigned yet'
                 : 'Chat with Counsellor',
             child: const Icon(Icons.chat_rounded),
