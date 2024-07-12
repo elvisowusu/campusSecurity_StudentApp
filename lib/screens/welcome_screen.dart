@@ -1,61 +1,72 @@
+import 'dart:ui';
+import 'package:flutter/material.dart';
 import 'package:student_app/screens/signin_screen.dart';
 import 'package:student_app/screens/signup_screen.dart';
-import 'package:student_app/theme/theme.dart';
 import 'package:student_app/widgets/custom_button.dart';
-import 'package:flutter/material.dart';
 import 'package:student_app/widgets/custom_scaffold.dart';
 
 class WelcomeScreen extends StatelessWidget {
-  const WelcomeScreen({super.key});
+  const WelcomeScreen({
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return  CustomScaffold(
+    return CustomScaffold(
       image: 'assets/images/WelcomePhoto.avif',
-      customContainer:Column(
-          children: [
-            Flexible(
-              flex: 9,
-              child: Center(child: RichText(
-                textAlign: TextAlign.center,
-                text:const TextSpan(
+      customContainer: Stack(
+        children: [
+          // Background image with blur effect
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/WelcomePhoto.avif'),
+                fit: BoxFit.cover,
+              ),
+            ),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(
+                  sigmaX: 0.3, sigmaY: 0.3), // Adjust blur sigma values
+              child: Container(
+                color:
+                    Colors.white.withOpacity(0.1), // Adjust opacity as needed
+              ),
+            ),
+          ),
+          // Content on top of the blurred background
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Spacer(),
+              // Buttons and content here
+              Align(
+                alignment: Alignment.bottomRight,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    TextSpan(
-                      text:'Welcome Back\n',
-                      style: TextStyle(color: Color.fromARGB(255, 10, 160, 15), fontSize: 45, fontWeight: FontWeight.w700) ),
-                    TextSpan(
-                      text: '\nSign in to see live cases',
-                      style: TextStyle(color: Colors.greenAccent, fontSize: 20, fontWeight: FontWeight.w500)
-                    )
+                     Expanded(
+                      child: WelcomeButton(
+                        buttonName: 'Sign In',
+                        onTap: const SignInScreen(),
+                        textColor: Colors.white,
+                        buttonColor: const Color.fromARGB(255, 6, 6, 6).withOpacity(0.7),
+                      ),
+                    ),
+                    Expanded(
+                      child: WelcomeButton(
+                        buttonName: 'Sign Up',
+                        onTap: const SignUpScreen(),
+                        textColor: Colors.white,
+                        buttonColor: const Color.fromARGB(255, 6, 6, 6).withOpacity(0.7),
+                      ),
+                    ),
                   ],
                 ),
               ),
-              
-              )),
-            Flexible(
-              flex: 1,
-              child: Align(
-                alignment: Alignment.bottomRight,
-                child: Row(
-                  children: [
-                    const Expanded(child: WelcomeButton(
-                      buttonName: 'Sign In',
-                      onTap: SignInScreen(),
-                      textColor: Colors.white,
-                      buttonColor: Colors.transparent,
-                    )),
-                    Expanded(child: WelcomeButton(
-                      buttonName: 'Sign Up',
-                      onTap:const SignUpScreen(),
-                      textColor: lightColorScheme.primary,
-                      buttonColor: Colors.white,
-                    ))
-                  ],
-                ),
-              )
-            )
-          ],
-      )
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../firebase_authentication/firebase_auth_services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -20,6 +21,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool agreePersonalData = true;
   // Loader
   bool _isSigningUp = false;
+  bool _isSigningUpWithGoogle = false;
 
   final FirebaseAuthService _auth = FirebaseAuthService();
 
@@ -383,24 +385,39 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         height: 15.0,
                       ),
                       // Signup button
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: _signUp,
-                          //loading indicator
-                          child: _isSigningUp
-                              ? const CircularProgressIndicator(
-                                  color: Colors.white,
-                                )
-                              : const Text('Sign up'),
+                      GestureDetector(
+                        onTap: _signUp,
+                        child: Container(
+                          width: double.infinity,
+                          height: 45,
+                          decoration: BoxDecoration(
+                            color: Colors.blue,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _isSigningUp
+                                    ? const CircularProgressIndicator(
+                                        color: Colors.white,
+                                      )
+                                    : const Text(
+                                        'Sign up',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(
-                        height: 15.0,
+                        height: 5.0,
                       ),
-                      // Sign up divider
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Expanded(
                             child: Divider(
@@ -414,7 +431,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               horizontal: 10,
                             ),
                             child: Text(
-                              'Sign up with',
+                              'Or',
                               style: TextStyle(
                                 color: Colors.black45,
                               ),
@@ -432,18 +449,41 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         height: 5.0,
                       ),
                       // Sign up social media logo
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          IconButton(
-                            onPressed: () {},
-                            icon: const Icon(
-                              Icons.g_mobiledata,
-                              size: 40,
-                              color: Color.fromARGB(255, 57, 232, 51),
+                      GestureDetector(
+                        onTap: _signUpWithGoogle,
+                        child: Container(
+                          width: double.infinity,
+                          height: 45,
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _isSigningUpWithGoogle
+                                    ? const CircularProgressIndicator(
+                                        color: Colors.white,
+                                      )
+                                    : const Icon(
+                                        FontAwesomeIcons.google,
+                                        color: Colors.white,
+                                      ),
+                                const SizedBox(
+                                  width: 5,
+                                ),
+                                const Text(
+                                  "Sign up with Google",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
+                        ),
                       ),
                       const SizedBox(
                         height: 15.0,
@@ -490,6 +530,27 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   void _signUp() async {
     if (_signUpFormKey.currentState!.validate() && agreePersonalData) {
+      // Validate phone number
+    if (_phoneNumberController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter Phone Number.'),
+        ),
+      );
+      return;
+    }
+
+    // Validate Ghanaian phone number format
+    final ghanaPhoneNumberRegex = RegExp(r'^[0][2-9][0-9]{8}$');
+    if (!ghanaPhoneNumberRegex.hasMatch(_phoneNumberController.text)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Invalid Ghanaian Phone Number.'),
+        ),
+      );
+      return;
+    }
+
       //loader
       setState(() {
         _isSigningUp = true;
@@ -540,6 +601,88 @@ class _SignUpScreenState extends State<SignUpScreen> {
         const SnackBar(
             content: Text('Please complete the form and agree to the terms.')),
       );
+    }
+  }
+
+  // Sign up with Google
+  void _signUpWithGoogle() async {
+    // Validate phone number
+    if (_phoneNumberController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter Phone Number.'),
+        ),
+      );
+      return;
+    }
+
+    // Validate Ghanaian phone number format
+    final ghanaPhoneNumberRegex = RegExp(r'^[0][2-9][0-9]{8}$');
+    if (!ghanaPhoneNumberRegex.hasMatch(_phoneNumberController.text)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Invalid Ghanaian Phone Number.'),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isSigningUpWithGoogle = true;
+    });
+    String referenceNumber = _referenceNumberController.text;
+    String phoneNumber = _phoneNumberController.text;
+
+    try {
+      // Perform Google sign-in
+      User? user = await FirebaseAuthService().signInWithGoogle();
+
+      if (user != null) {
+        // Check if user already exists in the database
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+
+        if (userDoc.exists) {
+          // User already exists, handle accordingly (e.g., log in the user)
+          showToast(message: "Google account already exists!");
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (e) => const SignInScreen()),
+          );
+        } else {
+          // Add user to the database
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .set({
+            'fullName': user.displayName,
+            'email': user.email,
+            'role': 'Student',
+            'Reference number': referenceNumber,
+            'phoneNumber': phoneNumber,
+            'createdAt': FieldValue.serverTimestamp(),
+          });
+          showToast(message: "Sign up successful");
+          setState(() {
+            _isSigningUpWithGoogle = false;
+          });
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (e) => const SignInScreen()),
+          );
+        }
+      } else {
+        showToast(message: "Some error happened");
+      }
+    } catch (e) {
+      showToast(message: "Error signing up with Google: $e");
+      showToast(message: "Failed to sign up with Google.");
+    } finally {
+      setState(() {
+        _isSigningUpWithGoogle = false;
+      });
     }
   }
 }
