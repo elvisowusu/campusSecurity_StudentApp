@@ -1,51 +1,58 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:student_app/Dashboard/Old%20Cases/individual_chat_room.dart';
-import 'package:student_app/common/enum/chat_services.dart';
 
-
-class StudentPattern extends StatefulWidget {
+class StudentPattern extends StatelessWidget {
   final String referenceNumber;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final User? currentUser = FirebaseAuth.instance.currentUser;
 
-  const StudentPattern({super.key, required this.referenceNumber});
-
-  @override
-  State<StudentPattern> createState() => _StudentPatternState();
-}
-
-class _StudentPatternState extends State<StudentPattern> {
-  final ChatService _chatService = ChatService(); // Initialize the ChatService
-
-  void _navigateToChat(BuildContext context) async {
-    String? counsellorId = await _chatService.getAssignedCounsellor();
-    if (counsellorId != null) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => IndividualChatPage(contactId: counsellorId),
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No counsellor assigned yet')),
-      );
-    }
-  }
+  StudentPattern({super.key, required this.referenceNumber});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Welcome - ${widget.referenceNumber}'),
+        title: Text('Welcome - $referenceNumber'),
       ),
       body: const Column(
         children: [
           Text('Map will appear here'),
+          // Add other widgets as needed for your layout
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: ()=> _navigateToChat(context),
-        tooltip: 'Chat with Counsellor',
-        child: const Icon(Icons.chat_rounded),
+      floatingActionButton: StreamBuilder<DocumentSnapshot>(
+        stream: _firestore.collection('users').doc(currentUser!.uid).snapshots(),
+        builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+          if (!snapshot.hasData) {
+            return const FloatingActionButton(
+              onPressed: null,
+              tooltip: 'Loading...',
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          var data = snapshot.data!.data() as Map<String, dynamic>;
+          var contactId = data['assignedCounsellor'];
+
+          return FloatingActionButton(
+            onPressed: contactId == null
+                ? null
+                : () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => IndividualChatPage(contactId: contactId),
+                      ),
+                    );
+                  },
+            tooltip: contactId == null
+                ? 'No counsellor assigned yet'
+                : 'Chat with Counsellor',
+            child: const Icon(Icons.chat_rounded),
+          );
+        },
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );

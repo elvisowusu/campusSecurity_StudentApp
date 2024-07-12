@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/services.dart';
 import 'package:student_app/common/toast.dart';
 import 'package:student_app/screens/signin_screen.dart';
@@ -529,8 +531,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   void _signUp() async {
-    if (_signUpFormKey.currentState!.validate() && agreePersonalData) {
-      // Validate phone number
+  if (_signUpFormKey.currentState!.validate() && agreePersonalData) {
+    // Validate phone number
     if (_phoneNumberController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -551,58 +553,95 @@ class _SignUpScreenState extends State<SignUpScreen> {
       return;
     }
 
-      //loader
-      setState(() {
-        _isSigningUp = true;
-      });
+    // Loader
+    setState(() {
+      _isSigningUp = true;
+    });
 
-      String fullName = _fullNameController.text;
-      String email = _emailController.text;
-      String password = _passwordController.text;
-      String referenceNumber = _referenceNumberController.text;
-      String phoneNumber = _phoneNumberController.text;
+    String fullName = _fullNameController.text;
+    String email = _emailController.text;
+    String password = _passwordController.text;
+    String referenceNumber = _referenceNumberController.text;
+    String phoneNumber = _phoneNumberController.text;
 
+    try {
+      // Perform user registration
       User? user = await _auth.signUp(email, password);
       setState(() {
         _isSigningUp = false;
       });
 
       if (user != null) {
+        // Assign a default counsellor (first counsellor from a list or a specific ID)
+        String defaultCounsellorId = await _getDefaultCounsellorId(); // Implement this method
+
+        // Store user details including assigned counsellor
         await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
           'fullName': fullName,
           'Reference number': referenceNumber,
           'email': email,
           'role': 'Student',
           'phoneNumber': phoneNumber,
+          'assignedCounsellor': defaultCounsellorId, // Assign default counsellor
           'createdAt': FieldValue.serverTimestamp(),
         });
+
         showToast(message: "Sign up successful");
         Navigator.push(
-            // ignore: use_build_context_synchronously
-            context,
-            MaterialPageRoute(builder: (e) => const SignInScreen()));
+          context,
+          MaterialPageRoute(builder: (e) => const SignInScreen()),
+        );
       } else {
         showToast(message: "Some error happened");
       }
-    } else {
-      setState(() {
-        // Update error messages if form is not valid
-        _fullNameError =
-            _fullNameController.text.isEmpty ? 'Please enter Full name' : null;
-        _referenceNumberError = _referenceNumberController.text.isEmpty
-            ? 'Please enter Reference Number'
-            : null;
-        _emailError =
-            _emailController.text.isEmpty ? 'Please enter Email' : null;
-        _passwordError =
-            _passwordController.text.isEmpty ? 'Please enter Password' : null;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Please complete the form and agree to the terms.')),
-      );
+    } catch (e) {
+      showToast(message: "Error signing up: $e");
     }
+  } else {
+    setState(() {
+      // Update error messages if form is not valid
+      _fullNameError =
+          _fullNameController.text.isEmpty ? 'Please enter Full name' : null;
+      _referenceNumberError = _referenceNumberController.text.isEmpty
+          ? 'Please enter Reference Number'
+          : null;
+      _emailError = _emailController.text.isEmpty ? 'Please enter Email' : null;
+      _passwordError =
+          _passwordController.text.isEmpty ? 'Please enter Password' : null;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+          content: Text('Please complete the form and agree to the terms.')),
+    );
   }
+}
+
+
+// Function to get a random counsellor ID
+Future<String> _getDefaultCounsellorId() async {
+  try {
+    // Query all counsellors
+    QuerySnapshot counsellorsSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('role', isEqualTo: 'Counsellor')
+        .get();
+
+    // Check if there are any counsellors available
+    if (counsellorsSnapshot.docs.isEmpty) {
+      showToast(message: "No counsellors available");
+      return ''; // Return an empty string or handle as needed
+    }
+
+    // Generate a random index to select a counsellor
+    int randomIndex = Random().nextInt(counsellorsSnapshot.docs.length);
+    String randomCounsellorId = counsellorsSnapshot.docs[randomIndex].id;
+
+    return randomCounsellorId; // Return the ID of the randomly selected counsellor
+  } catch (e) {
+    showToast(message: "Error getting random counsellor: $e");
+    return ''; // Return an empty string or handle as needed
+  }
+}
 
   // Sign up with Google
   void _signUpWithGoogle() async {
