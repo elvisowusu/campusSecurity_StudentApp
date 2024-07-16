@@ -40,7 +40,7 @@ dependencies:
   firebase_auth: ^5.1.0
   fluttertoast: ^8.2.6
   icons_plus: ^5.0.0
-  google_maps_flutter: ^2.6.1
+  google_maps_flutter: ^2.7.0
   cloud_firestore: ^5.1.0
   google_sign_in: ^6.2.1
   font_awesome_flutter: ^10.7.0
@@ -63,7 +63,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^3.0.0
+  flutter_lints: ^4.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
