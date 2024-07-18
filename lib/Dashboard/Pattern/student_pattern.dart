@@ -18,7 +18,7 @@ class StudentPattern extends StatelessWidget {
       ),
       body: const Column(
         children: [
-          Text('Distress signal is sent here'),
+          Text('Distress signal is from here'),
           // Add other widgets as needed for your layout
         ],
       ),
