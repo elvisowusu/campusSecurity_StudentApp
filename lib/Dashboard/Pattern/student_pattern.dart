@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:student_app/Dashboard/Case%20Analysis/map.dart';
 import 'package:student_app/Dashboard/Old%20Cases/individual_chat_room.dart';
 
 class StudentPattern extends StatelessWidget {
@@ -18,7 +19,7 @@ class StudentPattern extends StatelessWidget {
       ),
       body: const Column(
         children: [
-          Text('Distress signal is from here'),
+          Text('Map will appear here'),
           // Add other widgets as needed for your layout
         ],
       ),
@@ -43,7 +44,7 @@ class StudentPattern extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => IndividualChatPage(counselorId: counselorId),
+                        builder: (context) => const MapSample(),
                       ),
                     );
                   },
