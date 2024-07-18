@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:student_app/Dashboard/Case%20Analysis/map.dart';
 import 'package:student_app/Dashboard/Pattern/student_pattern.dart';
 import 'package:student_app/common/toast.dart';
 import 'package:student_app/screens/forgot_password_screen.dart';
@@ -514,15 +513,11 @@ class _SignInScreenState extends State<SignInScreen> {
 
       if (referenceNumber.isNotEmpty) {
         // Navigate to next screen passing referenceNumber
-        // Navigator.push(
-        //   context,
-        //   MaterialPageRoute(
-        //       builder: (context) =>
-        //           StudentPattern(referenceNumber: referenceNumber)),
-        // );
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context)=> const GoogleMapScreen())
+          MaterialPageRoute(
+              builder: (context) =>
+                  StudentPattern(referenceNumber: referenceNumber)),
         );
         showToast(message: 'Sign in successful!');
       } else {

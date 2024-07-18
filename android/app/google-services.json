@@ -1,0 +1,96 @@
+{
+  "project_info": {
+    "project_number": "1042376308323",
+    "project_id": "campus-security-app-eee20",
+    "storage_bucket": "campus-security-app-eee20.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1042376308323:android:913d752e15f6f23c5faa56",
+        "android_client_info": {
+          "package_name": "com.example.cs_location_tracker_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1042376308323-ovdbfrgm6msma1scukc2269aat9i2dpo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.cs_location_tracker_app",
+            "certificate_hash": "1df6612c74963e330d5eb23d67234e1e5853f374"
+          }
+        },
+        {
+          "client_id": "1042376308323-suk77nchkqlvsubnn7k9litgemqtnc8g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA9rrWyEgPUPc0LOkbLG6xiHY4S-AuoJs0"
+        },
+        {
+          "current_key": "AIzaSyCLmhuAcdzIV7i9z_BXhwOjUyRUjg-hP4g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1042376308323-40h623c6pkoqlbh40qtdpko54885inl8.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1042376308323-2s8vliruvc8pugr642vsnsh1oaer4dp5.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.csLocationTrackerApp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1042376308323:android:bdad6847baf7947d5faa56",
+        "android_client_info": {
+          "package_name": "com.example.student_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1042376308323-suk77nchkqlvsubnn7k9litgemqtnc8g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA9rrWyEgPUPc0LOkbLG6xiHY4S-AuoJs0"
+        },
+        {
+          "current_key": "AIzaSyCLmhuAcdzIV7i9z_BXhwOjUyRUjg-hP4g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1042376308323-40h623c6pkoqlbh40qtdpko54885inl8.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1042376308323-2s8vliruvc8pugr642vsnsh1oaer4dp5.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.csLocationTrackerApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
