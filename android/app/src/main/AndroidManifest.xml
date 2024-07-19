@@ -31,8 +31,8 @@
             android:value="2" />
 
         <!-- Google Map API Key-->
-        <meta-data android:name="com.google.android.geo.AIzaSyA9rrWyEgPUPc0LOkbLG6xiHY4S-AuoJs0"
-               android:value="YAIzaSyA9rrWyEgPUPc0LOkbLG6xiHY4S-AuoJs0"/>
+        <meta-data android:name="com.google.android.geo.AIzaSyCLmhuAcdzIV7i9z_BXhwOjUyRUjg-hP4g"
+               android:value="AIzaSyCLmhuAcdzIV7i9z_BXhwOjUyRUjg-hP4g"/>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility?hl=en and

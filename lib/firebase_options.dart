@@ -42,42 +42,6 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions web = FirebaseOptions(
     apiKey: 'AIzaSyDjw7wxQoilr2HLQs-afAklcf9Ky982PUM',
-    appId: '1:1042376308323:web:c74393062c5df4c65faa56',
-    messagingSenderId: '1042376308323',
-    projectId: 'campus-security-app-eee20',
-    authDomain: 'campus-security-app-eee20.firebaseapp.com',
-    storageBucket: 'campus-security-app-eee20.appspot.com',
-    measurementId: 'G-PVJ68YFT18',
-  );
-
-  static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyA9rrWyEgPUPc0LOkbLG6xiHY4S-AuoJs0',
-    appId: '1:1042376308323:android:913d752e15f6f23c5faa56',
-    messagingSenderId: '1042376308323',
-    projectId: 'campus-security-app-eee20',
-    storageBucket: 'campus-security-app-eee20.appspot.com',
-  );
-
-  static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBl9gxVmK9WQFLo49hMZ7T0ZOhR39ID2i4',
-    appId: '1:1042376308323:ios:026811838880ecf05faa56',
-    messagingSenderId: '1042376308323',
-    projectId: 'campus-security-app-eee20',
-    storageBucket: 'campus-security-app-eee20.appspot.com',
-    iosBundleId: 'com.example.csLocationTrackerApp',
-  );
-
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyBl9gxVmK9WQFLo49hMZ7T0ZOhR39ID2i4',
-    appId: '1:1042376308323:ios:026811838880ecf05faa56',
-    messagingSenderId: '1042376308323',
-    projectId: 'campus-security-app-eee20',
-    storageBucket: 'campus-security-app-eee20.appspot.com',
-    iosBundleId: 'com.example.csLocationTrackerApp',
-  );
-
-  static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyDjw7wxQoilr2HLQs-afAklcf9Ky982PUM',
     appId: '1:1042376308323:web:1d6f47ac2d4c43bc5faa56',
     messagingSenderId: '1042376308323',
     projectId: 'campus-security-app-eee20',
@@ -85,4 +49,45 @@ class DefaultFirebaseOptions {
     storageBucket: 'campus-security-app-eee20.appspot.com',
     measurementId: 'G-S0J3P81XHP',
   );
+
+  static const FirebaseOptions android = FirebaseOptions(
+    apiKey: 'AIzaSyA9rrWyEgPUPc0LOkbLG6xiHY4S-AuoJs0',
+    appId: '1:1042376308323:android:bdad6847baf7947d5faa56',
+    messagingSenderId: '1042376308323',
+    projectId: 'campus-security-app-eee20',
+    storageBucket: 'campus-security-app-eee20.appspot.com',
+  );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyBsL-o3qmFJdQlhLja_PjgNkK2e9K7Z3EY',
+    appId: '1:1042376308323:ios:73df871bfa6f496c5faa56',
+    messagingSenderId: '1042376308323',
+    projectId: 'campus-security-app-eee20',
+    storageBucket: 'campus-security-app-eee20.appspot.com',
+    androidClientId: '1042376308323-ovdbfrgm6msma1scukc2269aat9i2dpo.apps.googleusercontent.com',
+    iosClientId: '1042376308323-u3iaberqolkc3ccai8e2isg486eitghi.apps.googleusercontent.com',
+    iosBundleId: 'com.example.studentApp',
+  );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyBsL-o3qmFJdQlhLja_PjgNkK2e9K7Z3EY',
+    appId: '1:1042376308323:ios:73df871bfa6f496c5faa56',
+    messagingSenderId: '1042376308323',
+    projectId: 'campus-security-app-eee20',
+    storageBucket: 'campus-security-app-eee20.appspot.com',
+    androidClientId: '1042376308323-ovdbfrgm6msma1scukc2269aat9i2dpo.apps.googleusercontent.com',
+    iosClientId: '1042376308323-u3iaberqolkc3ccai8e2isg486eitghi.apps.googleusercontent.com',
+    iosBundleId: 'com.example.studentApp',
+  );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyBl9gxVmK9WQFLo49hMZ7T0ZOhR39ID2i4',
+    appId: '1:1042376308323:web:cca115896873c8925faa56',
+    messagingSenderId: '1042376308323',
+    projectId: 'campus-security-app-eee20',
+    authDomain: 'campus-security-app-eee20.firebaseapp.com',
+    storageBucket: 'campus-security-app-eee20.appspot.com',
+    measurementId: 'G-EZD5L6K88E',
+  );
+
 }
