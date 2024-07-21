@@ -715,6 +715,7 @@ Future<String> _getDefaultCounsellorId() async {
             MaterialPageRoute(builder: (e) => const SignInScreen()),
           );
         } else {
+          String defaultCounsellorId = await _getDefaultCounsellorId(); 
           // Add user to the database
           await FirebaseFirestore.instance
               .collection('users')
@@ -725,6 +726,7 @@ Future<String> _getDefaultCounsellorId() async {
             'role': 'Student',
             'Reference number': referenceNumber,
             'phoneNumber': phoneNumber,
+            'assignedCounsellor': defaultCounsellorId,
             'createdAt': FieldValue.serverTimestamp(),
           });
           showToast(message: "Sign up successful");
