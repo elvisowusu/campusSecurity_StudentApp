@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:student_app/Dashboard/Pattern/student_pattern.dart';
+import 'package:student_app/dashboard/pattern/student_pattern.dart';
 import 'package:student_app/common/toast.dart';
 import 'package:student_app/screens/forgot_password_screen.dart';
 import 'package:student_app/screens/signup_screen.dart';
@@ -36,12 +36,10 @@ class _SignInScreenState extends State<SignInScreen> {
   // Define FocusNodes
   final FocusNode _emailFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
-  final FocusNode _referenceNumberFocusNode = FocusNode();
 
   // Track error messages for fields
   String? _emailError;
   String? _passwordError;
-  String? _referenceNumberError;
 
   // Flag for password visibility
   bool _showPassword = false;
@@ -66,14 +64,6 @@ class _SignInScreenState extends State<SignInScreen> {
         });
       }
     });
-
-    _referenceNumberFocusNode.addListener(() {
-      if (_referenceNumberFocusNode.hasFocus) {
-        setState(() {
-          _referenceNumberError = null;
-        });
-      }
-    });
   }
 
   @override
@@ -83,7 +73,6 @@ class _SignInScreenState extends State<SignInScreen> {
     _referenceNumberController.dispose();
     _emailFocusNode.dispose();
     _passwordFocusNode.dispose();
-    _referenceNumberFocusNode.dispose();
     super.dispose();
   }
 
@@ -155,49 +144,6 @@ class _SignInScreenState extends State<SignInScreen> {
                                   ),
                                   borderRadius: BorderRadius.circular(10),
                                 )),
-                          ),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          // Reference Number
-                          TextFormField(
-                            controller: _referenceNumberController,
-                            focusNode: _referenceNumberFocusNode,
-                            keyboardType: TextInputType.number,
-                            autovalidateMode:
-                                AutovalidateMode.onUserInteraction,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                              LengthLimitingTextInputFormatter(8),
-                            ],
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter Reference Number';
-                              } else if (value.length != 8) {
-                                return 'Reference Number must be 8 digits';
-                              }
-                              return null;
-                            },
-                            decoration: InputDecoration(
-                              label: const Text('Reference Number'),
-                              hintText: 'Enter Reference Number',
-                              hintStyle: const TextStyle(
-                                color: Colors.black26,
-                              ),
-                              errorText: _referenceNumberError,
-                              border: OutlineInputBorder(
-                                borderSide: const BorderSide(
-                                  color: Colors.black12, // Default border color
-                                ),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(
-                                  color: Colors.black12, // Default border color
-                                ),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
                           ),
                           const SizedBox(
                             height: 15.0,
@@ -450,10 +396,11 @@ class _SignInScreenState extends State<SignInScreen> {
         if (referenceNumber.isNotEmpty) {
           // Navigate to next screen passing referenceNumber
           Navigator.push(
+            // ignore: use_build_context_synchronously
             context,
             MaterialPageRoute(
                 builder: (context) =>
-                    StudentPattern(referenceNumber: referenceNumber)),
+                    StudentPattern()),
           );
           showToast(message: 'Sign in successful!');
         } else {
@@ -517,7 +464,7 @@ class _SignInScreenState extends State<SignInScreen> {
           context,
           MaterialPageRoute(
               builder: (context) =>
-                  StudentPattern(referenceNumber: referenceNumber)),
+                  StudentPattern()),
         );
         showToast(message: 'Sign in successful!');
       } else {

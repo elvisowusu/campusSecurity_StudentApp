@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:student_app/dashboard/pattern/student_pattern.dart';
 import 'package:student_app/firebase_options.dart';
 import 'package:student_app/screens/splash_screen.dart';
 import 'package:student_app/theme/theme.dart';
@@ -6,7 +8,7 @@ import 'package:flutter/material.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -23,9 +25,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: lightMode,
-      home: const  SplashScreen(),
+      home: FirebaseAuth.instance.currentUser==null? const SplashScreen(): StudentPattern(),
     );
   }
 }
-
-

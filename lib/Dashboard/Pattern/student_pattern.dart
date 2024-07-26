@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:student_app/Dashboard/Old%20Cases/individual_chat_room.dart';
+import 'package:student_app/dashboard/Case%20Analysis/map.dart';
+import 'package:student_app/dashboard/Old%20Cases/individual_chat_room.dart';
 
 class StudentPattern extends StatelessWidget {
-  final String referenceNumber;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final User? currentUser = FirebaseAuth.instance.currentUser;
 
-  StudentPattern({super.key, required this.referenceNumber});
+  StudentPattern({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Welcome - $referenceNumber'),
+        title: const Text('Welcome'),
       ),
       body: const Column(
         children: [
           Text('share live location'),
-          // Add other widgets as needed for your layout
+          // Add other widgets
         ],
       ),
       floatingActionButton: StreamBuilder<DocumentSnapshot>(
@@ -43,7 +43,7 @@ class StudentPattern extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => IndividualChatPage(counselorId: counselorId),
+                        builder: (context) => const MapSample(),
                       ),
                     );
                   },

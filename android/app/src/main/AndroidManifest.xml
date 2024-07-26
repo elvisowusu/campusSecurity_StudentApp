@@ -1,4 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+    
     <application
         android:label="student_app"
         android:name="${applicationName}"
@@ -31,8 +34,8 @@
             android:value="2" />
 
         <!-- Google Map API Key-->
-        <meta-data android:name="com.google.android.geo.AIzaSyCLmhuAcdzIV7i9z_BXhwOjUyRUjg-hP4g"
-               android:value="AIzaSyCLmhuAcdzIV7i9z_BXhwOjUyRUjg-hP4g"/>
+        <meta-data android:name="com.google.android.geo.API_KEY"
+               android:value="AIzaSyA8_0unI0SLSt83ea1xmxQcxBECD9yNxQc"/>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility?hl=en and
