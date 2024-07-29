@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
-import 'package:student_app/common/toast.dart';
 
 class MapSample extends StatefulWidget {
   const MapSample({super.key});
@@ -15,14 +14,14 @@ class MapSampleState extends State<MapSample> {
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
 
-  Location _locationController = new Location();
+  final Location _locationController = Location();
 
   //Camera position for kumasi
   static const CameraPosition _kKumasi = CameraPosition(
     target: LatLng(6.6885, -1.6244),
     zoom: 13,
   );
-  LatLng? _currentPosition = null;
+  LatLng? _currentPosition;
   @override
   void initState() {
     super.initState();
@@ -59,20 +58,20 @@ class MapSampleState extends State<MapSample> {
 
   //Getting current user location
   Future<void> getCurrentLocation() async {
-    bool _serviceEnabled;
-    PermissionStatus _permissionGranted;
+    bool serviceEnabled;
+    PermissionStatus permissionGranted;
 
-    _serviceEnabled = await _locationController.serviceEnabled();
-    if (_serviceEnabled) {
-      _serviceEnabled = await _locationController.requestService();
+    serviceEnabled = await _locationController.serviceEnabled();
+    if (serviceEnabled) {
+      serviceEnabled = await _locationController.requestService();
     } else {
       return;
     }
 
-    _permissionGranted = await _locationController.hasPermission();
-    if (_permissionGranted == PermissionStatus.denied) {
-      _permissionGranted = await _locationController.requestPermission();
-      if (_permissionGranted != PermissionStatus.granted) {
+    permissionGranted = await _locationController.hasPermission();
+    if (permissionGranted == PermissionStatus.denied) {
+      permissionGranted = await _locationController.requestPermission();
+      if (permissionGranted != PermissionStatus.granted) {
         return;
       }
     }
@@ -84,7 +83,6 @@ class MapSampleState extends State<MapSample> {
         setState(() {
           _currentPosition =
               LatLng(currentLocation.latitude!, currentLocation.longitude!);
-          showToast(message:"$_currentPosition");
         });
       }
     });
