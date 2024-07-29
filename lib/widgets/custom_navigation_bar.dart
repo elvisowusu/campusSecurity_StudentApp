@@ -13,23 +13,12 @@ class CustomBottomNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.all(20.0), // Margin around the navigation bar for floating effect
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 53, 112, 231), // Background color of the navigation bar
-        borderRadius: BorderRadius.circular(40.0), // Rounded corners
-        boxShadow: [ // Shadow for a floating effect
-          BoxShadow(
-            color: const Color.fromARGB(255, 24, 30, 41).withOpacity(0.3),
-            spreadRadius: 3,
-            blurRadius: 4,
-            offset: const Offset(0, 3), // Shadow position
-          ),
-        ],
+      decoration: const BoxDecoration(
+        color: Color.fromARGB(255, 53, 112, 231),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric( vertical: 4.0),
         child: Row(
-          
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
             _buildNavItem(Icons.home, 0, 'Home'),
