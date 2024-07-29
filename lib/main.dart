@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:student_app/dashboard/pattern/student_pattern.dart';
 import 'package:student_app/firebase_options.dart';
+import 'package:student_app/screens/home_screen.dart';
 import 'package:student_app/screens/splash_screen.dart';
 import 'package:student_app/theme/theme.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: lightMode,
-      home: FirebaseAuth.instance.currentUser==null? const SplashScreen(): StudentPattern(),
+      home: FirebaseAuth.instance.currentUser==null? const SplashScreen(): const HomeScreen(),
     );
   }
 }

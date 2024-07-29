@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
+import 'package:student_app/common/toast.dart';
 
 class MapSample extends StatefulWidget {
   const MapSample({super.key});
@@ -45,6 +46,13 @@ class MapSampleState extends State<MapSample> {
         onMapCreated: (GoogleMapController controller) {
           _controller.complete(controller);
         },
+        markers: {
+          Marker(
+            markerId: const MarkerId("_currentLocation"),
+            icon: BitmapDescriptor.defaultMarker,
+            position: _currentPosition!,
+          )
+        }
       ),
     );
   }
@@ -76,7 +84,7 @@ class MapSampleState extends State<MapSample> {
         setState(() {
           _currentPosition =
               LatLng(currentLocation.latitude!, currentLocation.longitude!);
-          print(_currentPosition);
+          showToast(message:"$_currentPosition");
         });
       }
     });
