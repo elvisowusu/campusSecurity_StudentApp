@@ -14,7 +14,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: Color.fromARGB(255, 53, 112, 231),
+        color: Colors.black,
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric( vertical: 4.0),
@@ -44,7 +44,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
             child: Icon(
               icon,
               size: 20.0,
-              color: selectedIndex == index ? const Color.fromARGB(255, 53, 112, 231) : Colors.white,
+              color: selectedIndex == index ? Colors.black : Colors.white,
             ),
           ),
           const SizedBox(height: 5),
