@@ -17,7 +17,7 @@ Future<void> main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
+  
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -25,7 +25,9 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: lightMode,
-      home: FirebaseAuth.instance.currentUser==null? const SplashScreen(): const HomeScreen(),
+      home: FirebaseAuth.instance.currentUser == null
+          ? const SplashScreen()
+          : const HomeScreen(), // Add navigatorKey here
     );
   }
 }

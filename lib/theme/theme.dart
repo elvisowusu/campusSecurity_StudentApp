@@ -8,8 +8,6 @@ const lightColorScheme = ColorScheme(
   onSecondary: Color(0xFFFFFFFF),
   error: Color(0xFFBA1A1A),
   onError: Color(0xFFFFFFFF),
-  background: Color(0xFFFCFDF6),
-  onBackground: Color(0xFF1A1C18),
   shadow: Color(0xFF000000),
   outlineVariant: Color(0xFFC2C8BC),
   surface: Color(0xFFF9FAF3),
@@ -24,8 +22,6 @@ const darkColorScheme = ColorScheme(
   onSecondary: Color(0xFFFFFFFF),
   error: Color(0xFFBA1A1A),
   onError: Color(0xFFFFFFFF),
-  background: Color(0xFFFCFDF6),
-  onBackground: Color(0xFF1A1C18),
   shadow: Color(0xFF000000),
   outlineVariant: Color(0xFFC2C8BC),
   surface: Color(0xFFF9FAF3),
@@ -38,12 +34,12 @@ ThemeData lightMode = ThemeData(
   colorScheme: lightColorScheme,
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ButtonStyle(
-      backgroundColor: MaterialStateProperty.all<Color>(lightColorScheme.primary),
-      foregroundColor: MaterialStateProperty.all<Color>(lightColorScheme.onPrimary),
-      elevation: MaterialStateProperty.all<double>(5.0),
-      padding: MaterialStateProperty.all<EdgeInsets>(
+      backgroundColor: WidgetStateProperty.all<Color>(lightColorScheme.primary),
+      foregroundColor: WidgetStateProperty.all<Color>(lightColorScheme.onPrimary),
+      elevation: WidgetStateProperty.all<double>(5.0),
+      padding: WidgetStateProperty.all<EdgeInsets>(
           const EdgeInsets.symmetric(horizontal: 20, vertical: 18)),
-      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+      shape: WidgetStateProperty.all<RoundedRectangleBorder>(
         RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -58,12 +54,12 @@ ThemeData darkMode = ThemeData(
   colorScheme: darkColorScheme,
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ButtonStyle(
-      backgroundColor: MaterialStateProperty.all<Color>(darkColorScheme.primary),
-      foregroundColor: MaterialStateProperty.all<Color>(darkColorScheme.onPrimary),
-      elevation: MaterialStateProperty.all<double>(5.0),
-      padding: MaterialStateProperty.all<EdgeInsets>(
+      backgroundColor: WidgetStateProperty.all<Color>(darkColorScheme.primary),
+      foregroundColor: WidgetStateProperty.all<Color>(darkColorScheme.onPrimary),
+      elevation: WidgetStateProperty.all<double>(5.0),
+      padding: WidgetStateProperty.all<EdgeInsets>(
           const EdgeInsets.symmetric(horizontal: 20, vertical: 18)),
-      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+      shape: WidgetStateProperty.all<RoundedRectangleBorder>(
         RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),

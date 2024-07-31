@@ -27,8 +27,8 @@ class _MapPageState extends State<MapPage> {
     super.initState();
     _loadDangerZones();
     _initializeLocationUpdates();
-    
-    // Set a delay to hide the loading indicator after 3 seconds
+
+    // Set a delay to hide the loading indicator after 7 seconds
     Future.delayed(const Duration(seconds: 7), () {
       if (mounted) {
         setState(() {
@@ -63,26 +63,28 @@ class _MapPageState extends State<MapPage> {
         );
       });
     } catch (e) {
-      showToast(message: "Error loading danger zones: $e");
+      showToast(message: "Error loading danger zones: ${e.toString()}");
     }
   }
 
   void _initializeLocationUpdates() {
     _positionSubscription = Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.best,
-        distanceFilter: 10,
+        accuracy: LocationAccuracy.bestForNavigation,
+        distanceFilter: 5,
       ),
     ).listen(
       (Position position) {
         LatLng currentLatLng = LatLng(position.latitude, position.longitude);
         _updateCurrentLocationMarker(currentLatLng);
-        _mapController?.animateCamera(
-          CameraUpdate.newLatLng(currentLatLng),
-        );
+        if (_mapController != null) {
+          _mapController!.animateCamera(
+            CameraUpdate.newLatLng(currentLatLng),
+          );
+        }
       },
       onError: (error) {
-        print("Error in position stream: $error");
+        showToast(message: "Error in location updates: ${error.toString()}");
       },
     );
   }
@@ -120,13 +122,15 @@ class _MapPageState extends State<MapPage> {
               _mapController = controller;
 
               Geolocator.getCurrentPosition(
-                desiredAccuracy: LocationAccuracy.high,
+                desiredAccuracy: LocationAccuracy.bestForNavigation,
               ).then((position) {
                 LatLng currentLatLng = LatLng(position.latitude, position.longitude);
                 _mapController!.animateCamera(
                   CameraUpdate.newLatLng(currentLatLng),
                 );
                 _updateCurrentLocationMarker(currentLatLng);
+              }).catchError((error) {
+                showToast(message: "Error getting current position: ${error.toString()}");
               });
             },
             initialCameraPosition: CameraPosition(

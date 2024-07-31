@@ -29,7 +29,6 @@ class _StudentPatternState extends State<StudentPattern> {
           GestureDetector(
             onTap: () async {
               setState(() {
-                // Toggle location sharing state.
                 _shareLocation = !_shareLocation;
               });
 
@@ -39,7 +38,7 @@ class _StudentPatternState extends State<StudentPattern> {
                   Position position = await _locationService.getCurrentPosition();
                   await _locationService.storeLocationAsDangerZone(position);
                 } catch (e) {
-                  showToast(message: "Error: $e");
+                  showToast(message: "Error: ${e.toString()}");
                   setState(() {
                     _shareLocation = false;
                   });
@@ -49,7 +48,6 @@ class _StudentPatternState extends State<StudentPattern> {
             child: Container(
               color: Colors.yellow.shade600,
               padding: const EdgeInsets.all(8),
-              // Change button text when location sharing state changes.
               child: Text(_shareLocation ? 'Location shared' : 'Share location'),
             ),
           ),

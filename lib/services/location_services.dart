@@ -6,6 +6,7 @@ import 'package:student_app/common/toast.dart';
 class LocationService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  
   // Method to get the current position
   Future<Position> getCurrentPosition() async {
     bool serviceEnabled;
