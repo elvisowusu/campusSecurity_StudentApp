@@ -33,9 +33,6 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
         .collection('messages');
   }
 
-  void _initialization() async {
-    userUid = await ChatService().getUserIdFromSharedPreference();
-  }
 
   Future<void> sendMessage(MessageType messageType, String content) async {
     if (content.trim().isEmpty) return;
@@ -44,7 +41,6 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
         .collection('users')
         .doc(widget.contactId)
         .collection('chats');
-    final String userUid = _currentUser!.uid;
 
     final userChatDoc = await userChatsCollection.doc(_currentUser!.uid).get();
 
