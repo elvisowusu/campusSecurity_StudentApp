@@ -14,7 +14,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
   static final List<Widget> _pages = <Widget>[
-    const StudentPattern(),
+    const StudentPattern(studentUid: '',),
     const MapPage(),
   ];
 

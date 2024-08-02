@@ -22,33 +22,25 @@ class SignInScreen extends StatefulWidget {
 class _SignInScreenState extends State<SignInScreen> {
   final _signInformKey = GlobalKey<FormState>();
   bool rememberPassword = true;
-  //loader
   bool _isSigningIn = false;
   bool _isSigningInWithGoogle = false;
 
   final FirebaseAuthService _auth = FirebaseAuthService();
-
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _referenceNumberController =
-      TextEditingController();
 
-  // Define FocusNodes
   final FocusNode _emailFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
 
-  // Track error messages for fields
   String? _emailError;
   String? _passwordError;
 
-  // Flag for password visibility
   bool _showPassword = false;
 
   @override
   void initState() {
     super.initState();
 
-    // Add listeners to clear errors on focus
     _emailFocusNode.addListener(() {
       if (_emailFocusNode.hasFocus) {
         setState(() {
@@ -70,7 +62,6 @@ class _SignInScreenState extends State<SignInScreen> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
-    _referenceNumberController.dispose();
     _emailFocusNode.dispose();
     _passwordFocusNode.dispose();
     super.dispose();
@@ -152,7 +143,7 @@ class _SignInScreenState extends State<SignInScreen> {
                             controller: _passwordController,
                             focusNode: _passwordFocusNode,
                             obscureText:
-                                !_showPassword, // Toggle visibility based on _showPassword flag
+                                !_showPassword, 
                             obscuringCharacter: '*',
                             autovalidateMode:
                                 AutovalidateMode.onUserInteraction,
@@ -373,71 +364,60 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 
   void _signIn() async {
-  if (_signInformKey.currentState!.validate()) {
-    // Show loader
-    setState(() {
-      _isSigningIn = true;
-    });
+    if (_signInformKey.currentState!.validate()) {
+      setState(() {
+        _isSigningIn = true;
+      });
 
-    String email = _emailController.text;
-    String password = _passwordController.text;
+      String email = _emailController.text;
+      String password = _passwordController.text;
 
-    // Sign in with email and password
-    User? user = await _auth.signIn(email, password);
+      User? user = await _auth.signIn(email, password);
 
-    setState(() {
-      _isSigningIn = false;
-    });
+      setState(() {
+        _isSigningIn = false;
+      });
 
-    if (user != null) {
-      // Fetch referenceNumber from Firestore
-      String referenceNumber = await _fetchReferenceNumber(user.uid);
+      if (user != null) {
+        String referenceNumber = await _fetchReferenceNumber(user.uid);
 
-      if (referenceNumber.isNotEmpty) {
-        // Set studentId in UserSession
-        UserSession().studentId = referenceNumber;
+        if (referenceNumber.isNotEmpty) {
+          await UserSession().saveSession(user.uid, referenceNumber);
 
-        // Navigate to next screen passing referenceNumber
-        Navigator.push(
-          // ignore: use_build_context_synchronously
-          context,
-          MaterialPageRoute(
-              builder: (context) => const StudentPattern()),
-        );
-        showToast(message: 'Sign in successful!');
+          Navigator.push(
+            // ignore: use_build_context_synchronously
+            context,
+            MaterialPageRoute(
+                builder: (context) => StudentPattern(studentUid:user.uid,)),
+          );
+          showToast(message: 'Sign in successful!');
+        } else {
+          showToast(message: 'Error: Reference number not found!');
+        }
       } else {
-        showToast(message: 'Error: Reference number not found!');
+        showToast(message: 'Sign in failed!');
       }
     } else {
-      showToast(message: 'Sign in failed!');
+      setState(() {
+        _emailError = _emailController.text.isEmpty ? 'Please enter Email' : null;
+        _passwordError = _passwordController.text.isEmpty ? 'Please enter Password' : null;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please complete the form and agree to the terms.'),
+        ),
+      );
     }
-  } else {
-    setState(() {
-      // Update error messages if form is not valid
-      _emailError =
-          _emailController.text.isEmpty ? 'Please enter Email' : null;
-      _passwordError =
-          _passwordController.text.isEmpty ? 'Please enter Password' : null;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Please complete the form and agree to the terms.'),
-      ),
-    );
   }
-}
-
 
   Future<String> _fetchReferenceNumber(String userId) async {
     try {
-      // Fetch reference number from Firestore
       DocumentSnapshot snapshot = await FirebaseFirestore.instance
           .collection('users')
           .doc(userId)
           .get();
       if (snapshot.exists) {
-        return (snapshot.data() as Map<String, dynamic>)['Reference number'] ??
-            '';
+        return (snapshot.data() as Map<String, dynamic>)['Reference number'] ?? '';
       } else {
         return '';
       }
@@ -447,38 +427,34 @@ class _SignInScreenState extends State<SignInScreen> {
     }
   }
 
-// Sign in with Google
   void _signInWithGoogle() async {
-  setState(() {
-    _isSigningInWithGoogle = true;
-  });
+    setState(() {
+      _isSigningInWithGoogle = true;
+    });
 
-  User? user = await _auth.signInWithGoogle();
+    User? user = await _auth.signInWithGoogle();
 
-  setState(() {
-    _isSigningInWithGoogle = false;
-  });
+    setState(() {
+      _isSigningInWithGoogle = false;
+    });
 
-  if (user != null) {
-    // Fetch referenceNumber from Firestore
-    String referenceNumber = await _fetchReferenceNumber(user.uid);
+    if (user != null) {
+      String referenceNumber = await _fetchReferenceNumber(user.uid);
 
-    if (referenceNumber.isNotEmpty) {
-      // Set studentId in UserSession
-      UserSession().studentId = referenceNumber;
+      if (referenceNumber.isNotEmpty) {
+        await UserSession().saveSession(user.uid, referenceNumber);
 
-      // Navigate to next screen passing referenceNumber
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => const StudentPattern()),
-      );
-      showToast(message: 'Sign in successful!');
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => StudentPattern(studentUid: user.uid,)),
+        );
+        showToast(message: 'Sign in successful!');
+      } else {
+        showToast(message: 'Error: Reference number not found!');
+      }
     } else {
-      showToast(message: 'Error: Reference number not found!');
+      showToast(message: 'Sign in failed!');
     }
-  } else {
-    showToast(message: 'Sign in failed!');
   }
-}
 }

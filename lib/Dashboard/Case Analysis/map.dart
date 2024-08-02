@@ -13,7 +13,7 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> {
-  final LocationService _locationService = LocationService();
+  final LocationService _locationService; // Use the service with the required parameter
   final Set<Marker> _markers = {};
   GoogleMapController? _mapController;
   StreamSubscription<Position>? _positionSubscription;
@@ -21,6 +21,8 @@ class _MapPageState extends State<MapPage> {
   final LatLng _initialCameraPosition = const LatLng(0.0, 0.0);
 
   bool _isLoading = true; // Track loading state
+
+  _MapPageState() : _locationService = LocationService(studentUid: 'your_student_uid'); // Replace with actual student UID
 
   @override
   void initState() {

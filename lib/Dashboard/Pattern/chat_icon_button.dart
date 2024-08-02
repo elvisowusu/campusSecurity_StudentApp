@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:student_app/dashboard/Old%20Cases/individual_chat_room.dart';
+import 'package:student_app/dashboard/speak%20to%20counsellor/individual_chat_room.dart';
 
 class ChatIconButton extends StatelessWidget {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -51,7 +51,7 @@ class ChatIconButton extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) =>
-                          IndividualChatPage(counselorId: counselorId),
+                          IndividualChatPage(contactId: counselorId),
                     ),
                   );
                 },
