@@ -35,7 +35,7 @@ class _SignInScreenState extends State<SignInScreen> {
   String? _emailError;
   String? _passwordError;
 
-  bool _showPassword = false;
+  bool _showPassword = true;
 
   @override
   void initState() {
@@ -206,21 +206,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                   style: TextStyle(color: Colors.black45),
                                 )
                               ]),
-                              GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (e) =>
-                                              const ForgotPasswordScreen()));
-                                },
-                                child: Text(
-                                  'Forgot password?',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: lightColorScheme.primary),
-                                ),
-                              )
+                              const ForgotPasswordScreen()
                             ],
                           ),
                           const SizedBox(

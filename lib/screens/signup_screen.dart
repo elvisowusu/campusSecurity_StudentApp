@@ -50,7 +50,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   String? _phoneNumberError;
 
   // Flag for password visibility
-  bool _showPassword = false;
+  bool _showPassword = true;
 
   @override
   void initState() {
