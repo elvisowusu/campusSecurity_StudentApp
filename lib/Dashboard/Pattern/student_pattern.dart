@@ -1,14 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:student_app/common/toast.dart';
-import 'package:student_app/dashboard/pattern/chat_icon_button.dart';
-import 'package:student_app/services/location_services.dart'; // Updated import
+import 'package:student_app/services/location_services.dart';
+import 'package:student_app/services/user_session.dart';
+import 'package:student_app/widgets/signout.dart';
 
 class StudentPattern extends StatefulWidget {
-  final String studentUid;
-
-  const StudentPattern({super.key, required this.studentUid});
+  const StudentPattern({super.key});
 
   @override
   State<StudentPattern> createState() => _StudentPatternState();
@@ -22,7 +21,15 @@ class _StudentPatternState extends State<StudentPattern> {
   @override
   void initState() {
     super.initState();
-    _locationService = LocationService(studentUid: widget.studentUid);
+    _initializeLocationService();
+  }
+
+  Future<void> _initializeLocationService() async {
+    final userSession = UserSession();
+    await userSession.loadSession(); // Load the session to retrieve the student ID
+
+    _locationService = LocationService();
+    await _locationService.initialize(); // Initialize LocationService to set studentUid
   }
 
   @override
@@ -32,14 +39,16 @@ class _StudentPatternState extends State<StudentPattern> {
   }
 
   void startLocationUpdates() {
-    _locationUpdateTimer = Timer.periodic(const Duration(seconds: 20), (timer) async {
+    _locationUpdateTimer =
+        Timer.periodic(const Duration(seconds: 10), (timer) async {
       try {
         // Update location in Firestore and send live location to the police app
         await _locationService.updateLocation();
-        await _locationService.sendLiveLocation(await _locationService.getCurrentPosition()); // Add this line
-        showToast(message: "Location updated and sent successfully.");
+        await _locationService
+            .sendLiveLocation(await _locationService.getCurrentPosition());
+        Fluttertoast.showToast(msg: "Location updated and sent successfully.");
       } catch (e) {
-        showToast(message: "Failed to update location: $e");
+        Fluttertoast.showToast(msg: "Failed to update location: $e");
         stopLocationUpdates();
       }
     });
@@ -62,21 +71,23 @@ class _StudentPatternState extends State<StudentPattern> {
           permission = await Geolocator.requestPermission();
         }
 
-        if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
+        if (permission == LocationPermission.whileInUse ||
+            permission == LocationPermission.always) {
           // Start location updates
           startLocationUpdates();
           // Get the current location and store it as a danger zone
           Position position = await _locationService.getCurrentPosition();
           await _locationService.storeLocationAsDangerZone(position);
-          showToast(message: "Location shared and added as danger zone.");
+          Fluttertoast.showToast(
+              msg: "Location shared and added as danger zone.");
         } else {
-          showToast(message: "Location permission denied.");
+          Fluttertoast.showToast(msg: "Location permission denied.");
           setState(() {
             _shareLocation = false;
           });
         }
       } catch (e) {
-        showToast(message: "Error: ${e.toString()}");
+        Fluttertoast.showToast(msg: "Error: ${e.toString()}");
         setState(() {
           _shareLocation = false;
         });
@@ -92,9 +103,9 @@ class _StudentPatternState extends State<StudentPattern> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Welcome'),
-        actions: [
-          ChatIconButton(), // Custom widget for chat functionality
-        ],
+        actions: const [
+          SignOutButton()
+          ],
       ),
       body: Center(
         child: GestureDetector(

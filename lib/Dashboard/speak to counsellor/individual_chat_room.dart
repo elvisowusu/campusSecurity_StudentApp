@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:student_app/common/enum/chat_services.dart';
 import 'package:student_app/common/enum/message_type.dart';
 
 class IndividualChatPage extends StatefulWidget {

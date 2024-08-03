@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:student_app/dashboard/pattern/student_pattern.dart';
-import 'package:student_app/common/toast.dart';
 import 'package:student_app/screens/forgot_password_screen.dart';
+import 'package:student_app/screens/home_screen.dart';
 import 'package:student_app/screens/signup_screen.dart';
 import 'package:student_app/services/user_session.dart';
 import 'package:student_app/theme/theme.dart';
@@ -388,14 +388,14 @@ class _SignInScreenState extends State<SignInScreen> {
             // ignore: use_build_context_synchronously
             context,
             MaterialPageRoute(
-                builder: (context) => StudentPattern(studentUid:user.uid,)),
+                builder: (context) => const HomeScreen()),
           );
-          showToast(message: 'Sign in successful!');
+          Fluttertoast.showToast(msg: 'Sign in successful!');
         } else {
-          showToast(message: 'Error: Reference number not found!');
+          Fluttertoast.showToast(msg: 'Error: Reference number not found!');
         }
       } else {
-        showToast(message: 'Sign in failed!');
+        Fluttertoast.showToast(msg: 'Sign in failed!');
       }
     } else {
       setState(() {
@@ -422,7 +422,7 @@ class _SignInScreenState extends State<SignInScreen> {
         return '';
       }
     } catch (e) {
-      showToast(message: 'Error fetching reference number: $e');
+      Fluttertoast.showToast(msg: 'Error fetching reference number: $e');
       return '';
     }
   }
@@ -447,14 +447,14 @@ class _SignInScreenState extends State<SignInScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => StudentPattern(studentUid: user.uid,)),
+              builder: (context) => const HomeScreen()),
         );
-        showToast(message: 'Sign in successful!');
+        Fluttertoast.showToast(msg: 'Sign in successful!');
       } else {
-        showToast(message: 'Error: Reference number not found!');
+        Fluttertoast.showToast(msg: 'Error: Reference number not found!');
       }
     } else {
-      showToast(message: 'Sign in failed!');
+      Fluttertoast.showToast(msg: 'Sign in failed!');
     }
   }
 }

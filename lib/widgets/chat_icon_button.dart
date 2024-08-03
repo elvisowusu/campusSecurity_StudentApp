@@ -26,25 +26,8 @@ class ChatIconButton extends StatelessWidget {
         var data = snapshot.data!.data() as Map<String, dynamic>;
         var counselorId = data['assignedCounsellor'];
 
-        return IconButton(
-          icon: Container(
-            padding: const EdgeInsets.all(6), // Padding around the SVG
-            decoration: const BoxDecoration(
-              color: Color.fromARGB(255, 53, 112, 231), // Background color
-              shape: BoxShape.circle, // Circular background
-            ),
-            child: SvgPicture.asset(
-              'assets/chat.svg',
-              // ignore: deprecated_member_use
-              color: Colors.white,
-              width: 30,
-              height: 60,
-            ),
-          ),
-          tooltip: counselorId == null
-              ? 'No counsellor assigned yet'
-              : 'Chat with Counsellor',
-          onPressed: counselorId == null
+        return GestureDetector(
+          onTap: counselorId == null
               ? null
               : () {
                   Navigator.push(
@@ -55,9 +38,30 @@ class ChatIconButton extends StatelessWidget {
                     ),
                   );
                 },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Container(
+                padding: const EdgeInsets.all(9.0), // Match the padding
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white,
+                    width: 2.0, // Add a border to match the style
+                  ),
+                ),
+                child: SvgPicture.asset(
+                  'assets/chat.svg',
+                  color: Colors.white, // Match icon color
+                  width: 20,
+                  height: 20,
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
   }
 }
-

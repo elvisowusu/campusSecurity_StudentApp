@@ -1,8 +1,10 @@
 import 'dart:math';
 
 import 'package:flutter/services.dart';
-import 'package:student_app/common/toast.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:student_app/common/enum/chat_services.dart';
 import 'package:student_app/screens/signin_screen.dart';
+import 'package:student_app/services/user_session.dart';
 import 'package:student_app/theme/theme.dart';
 import 'package:student_app/widgets/custom_scaffold.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -457,7 +459,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           width: double.infinity,
                           height: 45,
                           decoration: BoxDecoration(
-                            color: Colors.red,
+                            color: Colors.white,
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Center(
@@ -465,20 +467,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 _isSigningUpWithGoogle
-                                    ? const CircularProgressIndicator(
-                                        color: Colors.white,
-                                      )
-                                    : const Icon(
-                                        FontAwesomeIcons.google,
-                                        color: Colors.white,
-                                      ),
+                                    ? const CircularProgressIndicator(color: Colors.blue)
+                                    : const FaIcon(FontAwesomeIcons.google, color: Colors.red),
                                 const SizedBox(
                                   width: 5,
                                 ),
                                 const Text(
                                   "Sign up with Google",
                                   style: TextStyle(
-                                    color: Colors.white,
+                                    color: Colors.black54,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -531,142 +528,148 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   void _signUp() async {
-  if (_signUpFormKey.currentState!.validate() && agreePersonalData) {
-    // Validate phone number
-    if (_phoneNumberController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter Phone Number.'),
-        ),
-      );
-      return;
-    }
+    if (_signUpFormKey.currentState!.validate() && agreePersonalData) {
+      // Validate phone number
+      if (_phoneNumberController.text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please enter Phone Number.'),
+          ),
+        );
+        return;
+      }
 
-    // Validate Ghanaian phone number format
-    final ghanaPhoneNumberRegex = RegExp(r'^[0][2-9][0-9]{8}$');
-    if (!ghanaPhoneNumberRegex.hasMatch(_phoneNumberController.text)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Invalid Ghanaian Phone Number.'),
-        ),
-      );
-      return;
-    }
+      // Validate Ghanaian phone number format
+      final ghanaPhoneNumberRegex = RegExp(r'^[0][2-9][0-9]{8}$');
+      if (!ghanaPhoneNumberRegex.hasMatch(_phoneNumberController.text)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invalid Ghanaian Phone Number.'),
+          ),
+        );
+        return;
+      }
 
-    // Loader
-    setState(() {
-      _isSigningUp = true;
-    });
-
-    String fullName = _fullNameController.text;
-    String email = _emailController.text;
-    String password = _passwordController.text;
-    String referenceNumber = _referenceNumberController.text;
-    String phoneNumber = _phoneNumberController.text;
-
-    try {
-      // Perform user registration
-      User? user = await _auth.signUp(email, password);
+      // Loader
       setState(() {
-        _isSigningUp = false;
+        _isSigningUp = true;
       });
 
-      if (user != null) {
-        // Assign a default counsellor (first counsellor from a list or a specific ID)
-        String defaultCounsellorId = await _getDefaultCounsellorId(); // Implement this method
+      String fullName = _fullNameController.text;
+      String email = _emailController.text;
+      String password = _passwordController.text;
+      String referenceNumber = _referenceNumberController.text;
+      String phoneNumber = _phoneNumberController.text;
 
-        // Store user details including assigned counsellor
-        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-          'fullName': fullName,
-          'Reference number': referenceNumber,
-          'email': email,
-          'role': 'Student',
-          'phoneNumber': phoneNumber,
-          'assignedCounsellor': defaultCounsellorId, // Assign default counsellor
-          'createdAt': FieldValue.serverTimestamp(),
+      try {
+        // Perform user registration
+        User? user = await _auth.signUp(email, password);
+        setState(() {
+          _isSigningUp = false;
         });
 
-        showToast(message: "Sign up successful");
-        Navigator.push(
-          // ignore: use_build_context_synchronously
-          context,
-          MaterialPageRoute(builder: (e) => const SignInScreen()),
-        );
-      } else {
-        showToast(message: "Some error happened");
+        if (user != null) {
+          // Assign a default counsellor (first counsellor from a list or a specific ID)
+          String defaultCounsellorId =
+              await _getDefaultCounsellorId(); // Implement this method
+
+          // Store user details including assigned counsellor
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .set({
+            'fullName': fullName,
+            'Reference number': referenceNumber,
+            'email': email,
+            'role': 'Student',
+            'phoneNumber': phoneNumber,
+            'assignedCounsellor':
+                defaultCounsellorId, // Assign default counsellor
+            'createdAt': FieldValue.serverTimestamp(),
+          });
+        
+        await UserSession().saveSession(user.uid, _referenceNumberController.text.trim());
+
+          Fluttertoast.showToast(msg: "Sign up successful");
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (e) => const SignInScreen()),
+          );
+        } else {
+          Fluttertoast.showToast(msg: "Some error happened");
+        }
+      } catch (e) {
+        Fluttertoast.showToast(msg: "Error signing up: $e");
       }
-    } catch (e) {
-      showToast(message: "Error signing up: $e");
+    } else {
+      setState(() {
+        // Update error messages if form is not valid
+        _fullNameError =
+            _fullNameController.text.isEmpty ? 'Please enter Full name' : null;
+        _referenceNumberError = _referenceNumberController.text.isEmpty
+            ? 'Please enter Reference Number'
+            : null;
+        _emailError =
+            _emailController.text.isEmpty ? 'Please enter Email' : null;
+        _passwordError =
+            _passwordController.text.isEmpty ? 'Please enter Password' : null;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Please complete the form and agree to the terms.')),
+      );
     }
-  } else {
-    setState(() {
-      // Update error messages if form is not valid
-      _fullNameError =
-          _fullNameController.text.isEmpty ? 'Please enter Full name' : null;
-      _referenceNumberError = _referenceNumberController.text.isEmpty
-          ? 'Please enter Reference Number'
-          : null;
-      _emailError = _emailController.text.isEmpty ? 'Please enter Email' : null;
-      _passwordError =
-          _passwordController.text.isEmpty ? 'Please enter Password' : null;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-          content: Text('Please complete the form and agree to the terms.')),
-    );
   }
-}
 
-// Function to get a random counsellor ID who has fewer than 20 students
-Future<String> _getDefaultCounsellorId() async {
-  try {
-    // Query all counsellors
-    QuerySnapshot counsellorsSnapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .where('role', isEqualTo: 'Counsellor')
-        .get();
-
-    // Check if there are any counsellors available
-    if (counsellorsSnapshot.docs.isEmpty) {
-      showToast(message: "No counsellors available");
-      return ''; // Return an empty string or handle as needed
-    }
-
-    // List to store counsellors with fewer than 20 students
-    List<String> eligibleCounsellors = [];
-
-    // Iterate through counsellors and check their student count
-    for (var doc in counsellorsSnapshot.docs) {
-      String counsellorId = doc.id;
-
-      // Query the number of students assigned to the counsellor
-      QuerySnapshot studentCountSnapshot = await FirebaseFirestore.instance
-          .collection('students')
-          .where('counsellorId', isEqualTo: counsellorId)
+// Function to get a random counsellor ID  who has fewer than 20 students
+  Future<String> _getDefaultCounsellorId() async {
+    try {
+      // Query all counsellors
+      QuerySnapshot counsellorsSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('role', isEqualTo: 'Counsellor')
           .get();
 
-      if (studentCountSnapshot.size < 20) {
-        eligibleCounsellors.add(counsellorId);
+      // Check if there are any counsellors available
+      if (counsellorsSnapshot.docs.isEmpty) {
+        Fluttertoast.showToast(msg: "No counsellors available");
+        return ''; // Return an empty string or handle as needed
       }
-    }
 
-    // Check if there are any eligible counsellors
-    if (eligibleCounsellors.isEmpty) {
-      showToast(message: "All counsellors are currently full");
+// List to store counsellors with fewer than 20 students
+      List<String> eligibleCounsellors = [];
+
+      // Iterate through counsellors and check their student count
+      for (var doc in counsellorsSnapshot.docs) {
+        String counsellorId = doc.id;
+
+        // Query the number of students assigned to the counsellor
+        QuerySnapshot studentCountSnapshot = await FirebaseFirestore.instance
+            .collection('students')
+            .where('counsellorId', isEqualTo: counsellorId)
+            .get();
+
+        if (studentCountSnapshot.size < 20) {
+          eligibleCounsellors.add(counsellorId);
+        }
+      }
+
+      // Check if there are any eligible counsellors
+      if (eligibleCounsellors.isEmpty) {
+        Fluttertoast.showToast(msg: "All counsellors are currently full");
+        return ''; // Return an empty string or handle as needed
+      }
+
+      // Generate a random index to select a counsellor from eligible counsellors
+      int randomIndex = Random().nextInt(eligibleCounsellors.length);
+      String randomCounsellorId = eligibleCounsellors[randomIndex];
+
+      return randomCounsellorId; // Return the ID of the randomly selected counsellor
+    } catch (e) {
+      Fluttertoast.showToast(msg: "Error getting random counsellor: $e");
       return ''; // Return an empty string or handle as needed
     }
-
-    // Generate a random index to select a counsellor from eligible counsellors
-    int randomIndex = Random().nextInt(eligibleCounsellors.length);
-    String randomCounsellorId = eligibleCounsellors[randomIndex];
-
-    return randomCounsellorId; // Return the ID of the randomly selected counsellor
-  } catch (e) {
-    showToast(message: "Error getting random counsellor: $e");
-    return ''; // Return an empty string or handle as needed
   }
-}
-
 
   // Sign up with Google
   void _signUpWithGoogle() async {
@@ -710,13 +713,13 @@ Future<String> _getDefaultCounsellorId() async {
 
         if (userDoc.exists) {
           // User already exists, handle accordingly (e.g., log in the user)
-          showToast(message: "Google account already exists!");
+          Fluttertoast.showToast(msg: "Google account already exists!");
           Navigator.push(
             context,
             MaterialPageRoute(builder: (e) => const SignInScreen()),
           );
         } else {
-          String defaultCounsellorId = await _getDefaultCounsellorId(); 
+          String defaultCounsellorId = await _getDefaultCounsellorId();
           // Add user to the database
           await FirebaseFirestore.instance
               .collection('users')
@@ -730,7 +733,10 @@ Future<String> _getDefaultCounsellorId() async {
             'assignedCounsellor': defaultCounsellorId,
             'createdAt': FieldValue.serverTimestamp(),
           });
-          showToast(message: "Sign up successful");
+          await UserSession().saveSession(user.uid, _referenceNumberController.text.trim());
+          await ChatService().saveUserIdToSharedPreference(referenceNumber);
+
+          Fluttertoast.showToast(msg: "Sign up successful");
           setState(() {
             _isSigningUpWithGoogle = false;
           });
@@ -740,11 +746,11 @@ Future<String> _getDefaultCounsellorId() async {
           );
         }
       } else {
-        showToast(message: "Some error happened");
+        Fluttertoast.showToast(msg: "Some error happened");
       }
     } catch (e) {
-      showToast(message: "Error signing up with Google: $e");
-      showToast(message: "Failed to sign up with Google.");
+      Fluttertoast.showToast(msg: "Error signing up with Google: $e");
+      Fluttertoast.showToast(msg: "Failed to sign up with Google.");
     } finally {
       setState(() {
         _isSigningUpWithGoogle = false;

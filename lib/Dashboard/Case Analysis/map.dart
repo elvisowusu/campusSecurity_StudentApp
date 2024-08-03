@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:student_app/common/toast.dart';
 import 'package:student_app/services/location_services.dart';
 
 class MapPage extends StatefulWidget {
@@ -22,7 +22,7 @@ class _MapPageState extends State<MapPage> {
 
   bool _isLoading = true; // Track loading state
 
-  _MapPageState() : _locationService = LocationService(studentUid: 'your_student_uid'); // Replace with actual student UID
+  _MapPageState() : _locationService = LocationService(); // Replace with actual student UID
 
   @override
   void initState() {
@@ -65,14 +65,14 @@ class _MapPageState extends State<MapPage> {
         );
       });
     } catch (e) {
-      showToast(message: "Error loading danger zones: ${e.toString()}");
+      Fluttertoast.showToast(msg: "Error loading danger zones: ${e.toString()}");
     }
   }
 
   void _initializeLocationUpdates() {
     _positionSubscription = Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.bestForNavigation,
+        accuracy: LocationAccuracy.best,
         distanceFilter: 5,
       ),
     ).listen(
@@ -86,7 +86,7 @@ class _MapPageState extends State<MapPage> {
         }
       },
       onError: (error) {
-        showToast(message: "Error in location updates: ${error.toString()}");
+        Fluttertoast.showToast(msg: "Error in location updates: ${error.toString()}");
       },
     );
   }
@@ -132,7 +132,7 @@ class _MapPageState extends State<MapPage> {
                 );
                 _updateCurrentLocationMarker(currentLatLng);
               }).catchError((error) {
-                showToast(message: "Error getting current position: ${error.toString()}");
+                Fluttertoast.showToast(msg: "Error getting current position: ${error.toString()}");
               });
             },
             initialCameraPosition: CameraPosition(
@@ -141,7 +141,7 @@ class _MapPageState extends State<MapPage> {
             ),
             markers: _markers,
           ),
-          if (_isLoading) // Show loading indicator while loading
+          if (_isLoading)
             const Center(
               child: CircularProgressIndicator(),
             ),
