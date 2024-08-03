@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
@@ -103,6 +104,18 @@ class _StudentPatternState extends State<StudentPattern> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Welcome'),
+        backgroundColor: Colors.black.withOpacity(0.2), // Semi-transparent background color
+        elevation: 0, // Remove shadow to enhance the glass effect
+        flexibleSpace: ClipRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0), // Blur effect
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.2), // Background color with transparency
+              ),
+            ),
+          ),
+        ),
         actions: const [
           SignOutButton()
           ],

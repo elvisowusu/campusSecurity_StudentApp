@@ -30,9 +30,9 @@ class SignOutButton extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Container(
-              padding: const EdgeInsets.all(9.0),
+              padding: const EdgeInsets.all(11.0), 
               decoration: BoxDecoration(
-                color: Colors.red, // Make the button more noticeable
+                color: const Color.fromARGB(255, 48, 46, 46),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
@@ -45,17 +45,8 @@ class SignOutButton extends StatelessWidget {
               ),
               child: const Icon(
                 Icons.logout, // Use logout icon for sign-out button
-                size: 20.0,
+                size: 22.0, // Ensure icon size fits well
                 color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 5),
-            const Text(
-              'Sign Out',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.bold, // Make the text bold
               ),
             ),
           ],
