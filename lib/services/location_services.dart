@@ -67,20 +67,28 @@ class LocationService {
 
   // Send live location to Firestore
   Future<void> sendLiveLocation(Position position) async {
-    await _ensureInitialized();
-    try {
-      await _firestore.collection('live_locations').add({
-        'studentUid': _studentUid!,
-        'location': GeoPoint(position.latitude, position.longitude),
-        'timestamp': FieldValue.serverTimestamp(),
-      });
+  await _ensureInitialized();
+  try {
+    String trackingId = DateTime.now().millisecondsSinceEpoch.toString();
+    await _firestore.collection('live_locations').doc(trackingId).set({
+      'studentUid': _studentUid!,
+      'studentName': await getStudentName(),
+      'location': GeoPoint(position.latitude, position.longitude),
+      'timestamp': FieldValue.serverTimestamp(),
+      'trackingId': trackingId,
+    });
 
-      Fluttertoast.showToast(msg: "Live location sent to the police app.");
-    } catch (e) {
-      Fluttertoast.showToast(msg: "Failed to send live location: $e");
-      rethrow;
-    }
+    Fluttertoast.showToast(msg: "Live location sent to the police app.");
+  } catch (e) {
+    Fluttertoast.showToast(msg: "Failed to send live location: $e");
+    rethrow;
   }
+}
+
+Future<String> getStudentName() async {
+  final userDoc = await _firestore.collection('users').doc(_studentUid!).get();
+  return userDoc.data()?['name'] ?? 'Unknown Student';
+}
 
   // Send a "Help Me" alert
   Future<void> sendHelpAlert() async {

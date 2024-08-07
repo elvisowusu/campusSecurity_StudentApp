@@ -53,6 +53,7 @@ class ChatIconButton extends StatelessWidget {
                 ),
                 child: SvgPicture.asset(
                   'assets/chat.svg',
+                  // ignore: deprecated_member_use
                   color: Colors.white, // Match icon color
                   width: 20,
                   height: 20,
