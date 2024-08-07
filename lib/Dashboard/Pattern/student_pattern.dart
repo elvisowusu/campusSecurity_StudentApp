@@ -15,8 +15,7 @@ class StudentPattern extends StatefulWidget {
 }
 
 class _StudentPatternState extends State<StudentPattern> {
-  bool _shareLocation = false;
-  Timer? _locationUpdateTimer;
+  bool _helpRequested = false;
   late final LocationService _locationService;
 
   @override
@@ -35,36 +34,12 @@ class _StudentPatternState extends State<StudentPattern> {
 
   @override
   void dispose() {
-    _locationUpdateTimer?.cancel();
+    _locationService.dispose(); // This will cancel any ongoing timers
     super.dispose();
   }
 
-  void startLocationUpdates() {
-    _locationUpdateTimer =
-        Timer.periodic(const Duration(seconds: 10), (timer) async {
-      try {
-        // Update location in Firestore and send live location to the police app
-        await _locationService.updateLocation();
-        await _locationService
-            .sendLiveLocation(await _locationService.getCurrentPosition());
-        Fluttertoast.showToast(msg: "Location updated and sent successfully.");
-      } catch (e) {
-        Fluttertoast.showToast(msg: "Failed to update location: $e");
-        stopLocationUpdates();
-      }
-    });
-  }
-
-  void stopLocationUpdates() {
-    _locationUpdateTimer?.cancel();
-  }
-
-  Future<void> _toggleLocationSharing() async {
-    setState(() {
-      _shareLocation = !_shareLocation;
-    });
-
-    if (_shareLocation) {
+  Future<void> _toggleHelpRequest() async {
+    if (!_helpRequested) {
       try {
         // Check and request location permissions if needed
         LocationPermission permission = await Geolocator.checkPermission();
@@ -74,28 +49,22 @@ class _StudentPatternState extends State<StudentPattern> {
 
         if (permission == LocationPermission.whileInUse ||
             permission == LocationPermission.always) {
-          // Start location updates
-          startLocationUpdates();
-          // Get the current location and store it as a danger zone
-          Position position = await _locationService.getCurrentPosition();
-          await _locationService.storeLocationAsDangerZone(position);
-          Fluttertoast.showToast(
-              msg: "Location shared and added as danger zone.");
-        } else {
-          Fluttertoast.showToast(msg: "Location permission denied.");
+          // Send help request
+          await _locationService.sendHelpRequest();
           setState(() {
-            _shareLocation = false;
+            _helpRequested = true;
           });
+          Fluttertoast.showToast(msg: "Help request sent. Sharing location with police.");
+        } else {
+          Fluttertoast.showToast(msg: "Location permission denied. Cannot send help request.");
         }
       } catch (e) {
         Fluttertoast.showToast(msg: "Error: ${e.toString()}");
-        setState(() {
-          _shareLocation = false;
-        });
-        stopLocationUpdates();
       }
     } else {
-      stopLocationUpdates();
+      // If help was already requested, we'll just show a message
+      // In a real app, you might want to add functionality to cancel the help request
+      Fluttertoast.showToast(msg: "Help request already sent. Police have been notified.");
     }
   }
 
@@ -104,33 +73,44 @@ class _StudentPatternState extends State<StudentPattern> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Welcome'),
-        backgroundColor: Colors.black.withOpacity(0.2), // Semi-transparent background color
-        elevation: 0, // Remove shadow to enhance the glass effect
+        backgroundColor: Colors.black.withOpacity(0.2),
+        elevation: 0,
         flexibleSpace: ClipRect(
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0), // Blur effect
+            filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.2), // Background color with transparency
+                color: Colors.black.withOpacity(0.2),
               ),
             ),
           ),
         ),
         actions: const [
           SignOutButton()
-          ],
+        ],
       ),
       body: Center(
-        child: GestureDetector(
-          onTap: _toggleLocationSharing,
-          child: Container(
-            color: Colors.yellow.shade600,
-            padding: const EdgeInsets.all(16),
-            child: Text(
-              _shareLocation ? 'Location sharing active' : 'Tap to share location',
-              style: const TextStyle(color: Colors.black, fontSize: 18),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            GestureDetector(
+              onTap: _toggleHelpRequest,
+              child: Container(
+                color: _helpRequested ? Colors.red : Colors.yellow.shade600,
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  _helpRequested ? 'Help requested' : 'Tap to request help',
+                  style: const TextStyle(color: Colors.black, fontSize: 18),
+                ),
+              ),
             ),
-          ),
+            const SizedBox(height: 20),
+            Text(
+              _helpRequested ? 'Police have been notified and are tracking your location' : 'Tap the button above if you need help',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 16),
+            ),
+          ],
         ),
       ),
     );

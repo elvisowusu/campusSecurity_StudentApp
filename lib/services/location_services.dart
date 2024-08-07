@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
@@ -7,6 +8,7 @@ import 'user_session.dart';
 class LocationService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   String? _studentUid;
+  Timer? _locationUpdateTimer;
 
   // Initialize LocationService
   Future<void> initialize() async {
@@ -20,13 +22,11 @@ class LocationService {
     bool serviceEnabled;
     LocationPermission permission;
 
-    // Check if location services are enabled
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       throw Exception('Location services are disabled.');
     }
 
-    // Check for location permissions
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
@@ -39,7 +39,6 @@ class LocationService {
       throw Exception('Location permissions are permanently denied.');
     }
 
-    // Get current position
     return await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.best,
     );
@@ -57,62 +56,68 @@ class LocationService {
         'lastUpdated': FieldValue.serverTimestamp(),
       });
 
-      // Also send live location to Firestore
-      await sendLiveLocation(position);
     } catch (e) {
       Fluttertoast.showToast(msg: "Failed to update location: $e");
       rethrow;
     }
   }
 
-  // Send live location to Firestore
-  Future<void> sendLiveLocation(Position position) async {
-  await _ensureInitialized();
-  try {
-    String trackingId = DateTime.now().millisecondsSinceEpoch.toString();
-    await _firestore.collection('live_locations').doc(trackingId).set({
-      'studentUid': _studentUid!,
-      'studentName': await getStudentName(),
-      'location': GeoPoint(position.latitude, position.longitude),
-      'timestamp': FieldValue.serverTimestamp(),
-      'trackingId': trackingId,
-    });
-
-    Fluttertoast.showToast(msg: "Live location sent to the police app.");
-  } catch (e) {
-    Fluttertoast.showToast(msg: "Failed to send live location: $e");
-    rethrow;
-  }
-}
-
-Future<String> getStudentName() async {
-  final userDoc = await _firestore.collection('users').doc(_studentUid!).get();
-  return userDoc.data()?['name'] ?? 'Unknown Student';
-}
-
-  // Send a "Help Me" alert
-  Future<void> sendHelpAlert() async {
+  // Send help request and start live location updates
+  Future<void> sendHelpRequest() async {
     await _ensureInitialized();
     try {
       Position position = await getCurrentPosition();
-      final nearestPoliceId = await findNearestPolice(position);
+      String trackingId = DateTime.now().millisecondsSinceEpoch.toString();
+      
+      await _firestore.collection('help_requests').doc(trackingId).set({
+        'studentUid': _studentUid!,
+        'studentName': await getStudentName(),
+        'referenceNumber': await getStudentReferenceNumber(),
+        'initialLocation': GeoPoint(position.latitude, position.longitude),
+        'currentLocation': GeoPoint(position.latitude, position.longitude),
+        'timestamp': FieldValue.serverTimestamp(),
+        'trackingId': trackingId,
+        'status': 'active',
+      });
 
-      if (nearestPoliceId != null) {
-        await _firestore.collection('helpRequests').add({
-          'studentUid': _studentUid!,
-          'nearestPoliceId': nearestPoliceId,
-          'timestamp': FieldValue.serverTimestamp(),
-          'location': GeoPoint(position.latitude, position.longitude),
-        });
+      // Start sending live location updates
+      startLiveLocationUpdates(trackingId);
 
-        Fluttertoast.showToast(msg: "Help request sent successfully.");
-      } else {
-        Fluttertoast.showToast(msg: "No nearby police found.");
-      }
+      Fluttertoast.showToast(msg: "Help request sent to the police app.");
     } catch (e) {
-      Fluttertoast.showToast(msg: "Failed to send help alert: $e");
+      Fluttertoast.showToast(msg: "Failed to send help request: $e");
       rethrow;
     }
+  }
+
+  void startLiveLocationUpdates(String trackingId) {
+    _locationUpdateTimer?.cancel();
+    _locationUpdateTimer = Timer.periodic(Duration(seconds: 10), (timer) async {
+      try {
+        Position position = await getCurrentPosition();
+        await updateLiveLocation(trackingId, position);
+      } catch (e) {
+        print("Error updating live location: $e");
+      }
+    });
+  }
+
+  Future<void> updateLiveLocation(String trackingId, Position position) async {
+    await _firestore.collection('help_requests').doc(trackingId).update({
+      'currentLocation': GeoPoint(position.latitude, position.longitude),
+      'lastUpdated': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<String> getStudentName() async {
+    final userDoc = await _firestore.collection('users').doc(_studentUid!).get();
+    return userDoc.data()?['name'] ?? 'Unknown Student';
+  }
+
+  Future<String> getStudentReferenceNumber() async {
+    final userSession = UserSession();
+    await userSession.loadSession();
+    return userSession.referenceNumber ?? 'Unknown';
   }
 
   // Find the nearest police officer
@@ -184,5 +189,10 @@ Future<String> getStudentName() async {
     if (_studentUid == null) {
       await initialize();
     }
+  }
+
+  // Cancel the location update timer when it's no longer needed
+  void dispose() {
+    _locationUpdateTimer?.cancel();
   }
 }
