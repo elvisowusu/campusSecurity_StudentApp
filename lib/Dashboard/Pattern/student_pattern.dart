@@ -17,6 +17,7 @@ class StudentPattern extends StatefulWidget {
 class _StudentPatternState extends State<StudentPattern> {
   bool _helpRequested = false;
   late final LocationService _locationService;
+  StreamSubscription<String>? _statusSubscription;
 
   @override
   void initState() {
@@ -26,22 +27,22 @@ class _StudentPatternState extends State<StudentPattern> {
 
   Future<void> _initializeLocationService() async {
     final userSession = UserSession();
-    await userSession.loadSession(); // Load the session to retrieve the student ID
+    await userSession.loadSession();
 
     _locationService = LocationService();
-    await _locationService.initialize(); // Initialize LocationService to set studentUid
+    await _locationService.initialize();
   }
 
   @override
   void dispose() {
-    _locationService.dispose(); // This will cancel any ongoing timers
+    _locationService.dispose();
+    _statusSubscription?.cancel();
     super.dispose();
   }
 
-  Future<void> _toggleHelpRequest() async {
+  Future<void> _sendHelpRequest() async {
     if (!_helpRequested) {
       try {
-        // Check and request location permissions if needed
         LocationPermission permission = await Geolocator.checkPermission();
         if (permission == LocationPermission.denied) {
           permission = await Geolocator.requestPermission();
@@ -51,10 +52,37 @@ class _StudentPatternState extends State<StudentPattern> {
             permission == LocationPermission.always) {
           // Send help request
           await _locationService.sendHelpRequest();
+          
+          // Update student's location
+          await _locationService.updateLocation();
+          
+          // Find nearest police
+          Position currentPosition = await _locationService.getCurrentPosition();
+          String? nearestPoliceId = await _locationService.findNearestPolice(currentPosition);
+          
+          if (nearestPoliceId != null) {
+            Fluttertoast.showToast(msg: "Nearest police officer notified.");
+          }
+          
+          // Mark current location as danger zone
+          await _locationService.storeLocationAsDangerZone(currentPosition);
+
           setState(() {
             _helpRequested = true;
           });
+          
           Fluttertoast.showToast(msg: "Help request sent. Sharing location with police.");
+          
+          // Start listening to status updates
+          _statusSubscription = _locationService.getHelpRequestStatus().listen((status) {
+            if (status == 'resolved') {
+              setState(() {
+                _helpRequested = false;
+              });
+              Fluttertoast.showToast(msg: "Help request resolved.");
+              _statusSubscription?.cancel();
+            }
+          });
         } else {
           Fluttertoast.showToast(msg: "Location permission denied. Cannot send help request.");
         }
@@ -62,8 +90,6 @@ class _StudentPatternState extends State<StudentPattern> {
         Fluttertoast.showToast(msg: "Error: ${e.toString()}");
       }
     } else {
-      // If help was already requested, we'll just show a message
-      // In a real app, you might want to add functionality to cancel the help request
       Fluttertoast.showToast(msg: "Help request already sent. Police have been notified.");
     }
   }
@@ -94,7 +120,7 @@ class _StudentPatternState extends State<StudentPattern> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             GestureDetector(
-              onTap: _toggleHelpRequest,
+              onTap: _sendHelpRequest,
               child: Container(
                 color: _helpRequested ? Colors.red : Colors.yellow.shade600,
                 padding: const EdgeInsets.all(16),

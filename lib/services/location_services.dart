@@ -11,6 +11,7 @@ class LocationService {
   String? _studentName;
   String? _referenceNumber;
   Timer? _locationUpdateTimer;
+  String? _currentTrackingId;
 
   Future<void> initialize() async {
     final userSession = UserSession();
@@ -63,6 +64,7 @@ class LocationService {
     try {
       Position position = await getCurrentPosition();
       String trackingId = DateTime.now().millisecondsSinceEpoch.toString();
+      _currentTrackingId = trackingId;
 
       await _firestore.collection('help_requests').doc(trackingId).set({
         'studentUid': _studentUid!,
@@ -100,6 +102,32 @@ class LocationService {
       'currentLocation': GeoPoint(position.latitude, position.longitude),
       'lastUpdated': FieldValue.serverTimestamp(),
     });
+  }
+
+
+  // New method to check help request status
+  Stream<String> getHelpRequestStatus() {
+    if (_currentTrackingId == null) {
+      throw Exception('No active help request');
+    }
+    return _firestore
+        .collection('help_requests')
+        .doc(_currentTrackingId)
+        .snapshots()
+        .map((snapshot) => snapshot.data()?['status'] as String? ?? 'unknown');
+  }
+
+  // New method to end help request
+  Future<void> endHelpRequest() async {
+    if (_currentTrackingId == null) {
+      throw Exception('No active help request');
+    }
+    await _firestore.collection('help_requests').doc(_currentTrackingId).update({
+      'status': 'resolved',
+      'resolvedAt': FieldValue.serverTimestamp(),
+    });
+    _locationUpdateTimer?.cancel();
+    _currentTrackingId = null;
   }
 
   Future<String?> findNearestPolice(Position studentLocation) async {
