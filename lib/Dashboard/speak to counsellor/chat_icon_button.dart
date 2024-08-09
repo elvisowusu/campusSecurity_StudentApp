@@ -13,7 +13,7 @@ class ChatIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<DocumentSnapshot>(
-      stream: _firestore.collection('users').doc(currentUser!.uid).snapshots(),
+      stream: _firestore.collection('students').doc(currentUser!.uid).snapshots(),
       builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
         if (!snapshot.hasData) {
           return const IconButton(

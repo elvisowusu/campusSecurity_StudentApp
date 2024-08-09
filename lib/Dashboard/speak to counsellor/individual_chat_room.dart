@@ -25,7 +25,7 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
     super.initState();
     _currentUser = _auth.currentUser;
     _messagesCollection = _firestore
-        .collection('users')
+        .collection('counselors')
         .doc(widget.contactId)
         .collection('chats')
         .doc(_currentUser!.uid)
@@ -37,7 +37,7 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
     if (content.trim().isEmpty) return;
 
     final userChatsCollection = _firestore
-        .collection('users')
+        .collection('counselors')
         .doc(widget.contactId)
         .collection('chats');
 
@@ -46,7 +46,7 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
     if (!userChatDoc.exists) {
       final String userUid = _currentUser!.uid;
       final DocumentSnapshot userDoc = await FirebaseFirestore.instance
-          .collection('users')
+          .collection('students')
           .doc(userUid)
           .get();
       final data = userDoc.data() as Map<String, dynamic>;

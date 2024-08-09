@@ -34,20 +34,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _referenceNumberController =
       TextEditingController();
-  final TextEditingController _phoneNumberController = TextEditingController();
   // Define FocusNodes
   final FocusNode _fullNameFocusNode = FocusNode();
   final FocusNode _emailFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
   final FocusNode _referenceNumberFocusNode = FocusNode();
-  final FocusNode _phoneNumberFocusNode = FocusNode();
 
   // Track error messages for fields
   String? _fullNameError;
   String? _emailError;
   String? _passwordError;
   String? _referenceNumberError;
-  String? _phoneNumberError;
 
   // Flag for password visibility
   bool _showPassword = true;
@@ -88,14 +85,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
         });
       }
     });
-
-    _phoneNumberFocusNode.addListener(() {
-      if (_phoneNumberFocusNode.hasFocus) {
-        setState(() {
-          _phoneNumberError = null;
-        });
-      }
-    });
   }
 
   @override
@@ -104,12 +93,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _referenceNumberController.dispose();
-    _phoneNumberController.dispose();
     _fullNameFocusNode.dispose();
     _emailFocusNode.dispose();
     _passwordFocusNode.dispose();
     _referenceNumberFocusNode.dispose();
-    _phoneNumberFocusNode.dispose();
     super.dispose();
   }
 
@@ -215,48 +202,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             color: Colors.black26,
                           ),
                           errorText: _referenceNumberError,
-                          border: OutlineInputBorder(
-                            borderSide: const BorderSide(
-                              color: Colors.black12, // Default border color
-                            ),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(
-                              color: Colors.black12, // Default border color
-                            ),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(
-                        height: 15.0,
-                      ),
-                      // Phone Number
-                      TextFormField(
-                        controller: _phoneNumberController,
-                        focusNode: _phoneNumberFocusNode,
-                        keyboardType: TextInputType.number,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                          LengthLimitingTextInputFormatter(10),
-                        ],
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter Phone Number';
-                          } else if (value.length != 10) {
-                            return 'Invalid phone number';
-                          }
-                          return null;
-                        },
-                        decoration: InputDecoration(
-                          label: const Text('Phone Number'),
-                          hintText: 'Enter Phone Number',
-                          hintStyle: const TextStyle(
-                            color: Colors.black26,
-                          ),
-                          errorText: _phoneNumberError,
                           border: OutlineInputBorder(
                             borderSide: const BorderSide(
                               color: Colors.black12, // Default border color
@@ -467,8 +412,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 _isSigningUpWithGoogle
-                                    ? const CircularProgressIndicator(color: Colors.blue)
-                                    : const FaIcon(FontAwesomeIcons.google, color: Colors.red),
+                                    ? const CircularProgressIndicator(
+                                        color: Colors.blue)
+                                    : const FaIcon(FontAwesomeIcons.google,
+                                        color: Colors.red),
                                 const SizedBox(
                                   width: 5,
                                 ),
@@ -529,27 +476,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   void _signUp() async {
     if (_signUpFormKey.currentState!.validate() && agreePersonalData) {
-      // Validate phone number
-      if (_phoneNumberController.text.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please enter Phone Number.'),
-          ),
-        );
-        return;
-      }
-
-      // Validate Ghanaian phone number format
-      final ghanaPhoneNumberRegex = RegExp(r'^[0][2-9][0-9]{8}$');
-      if (!ghanaPhoneNumberRegex.hasMatch(_phoneNumberController.text)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Invalid Ghanaian Phone Number.'),
-          ),
-        );
-        return;
-      }
-
       // Loader
       setState(() {
         _isSigningUp = true;
@@ -559,10 +485,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
       String email = _emailController.text;
       String password = _passwordController.text;
       String referenceNumber = _referenceNumberController.text;
-      String phoneNumber = _phoneNumberController.text;
 
       try {
-        // Perform user registration
+        // Perform student registration
         User? user = await _auth.signUp(email, password);
         setState(() {
           _isSigningUp = false;
@@ -573,22 +498,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
           String defaultCounsellorId =
               await _getDefaultCounsellorId(); // Implement this method
 
-          // Store user details including assigned counsellor
+          // Store student details including assigned counsellor
           await FirebaseFirestore.instance
-              .collection('users')
+              .collection('students')
               .doc(user.uid)
               .set({
             'fullName': fullName,
             'Reference number': referenceNumber,
             'email': email,
-            'role': 'Student',
-            'phoneNumber': phoneNumber,
             'assignedCounsellor':
                 defaultCounsellorId, // Assign default counsellor
             'createdAt': FieldValue.serverTimestamp(),
           });
-        
-        await UserSession().saveSession(user.uid, _referenceNumberController.text.trim());
+
+          await UserSession().saveSession(
+  user.uid,
+  _referenceNumberController.text.trim(),
+  _fullNameController.text.trim()
+);
 
           Fluttertoast.showToast(msg: "Sign up successful");
           Navigator.push(
@@ -625,10 +552,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Future<String> _getDefaultCounsellorId() async {
     try {
       // Query all counsellors
-      QuerySnapshot counsellorsSnapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .where('role', isEqualTo: 'Counsellor')
-          .get();
+      QuerySnapshot counsellorsSnapshot =
+          await FirebaseFirestore.instance.collection('counselors').get();
 
       // Check if there are any counsellors available
       if (counsellorsSnapshot.docs.isEmpty) {
@@ -673,46 +598,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   // Sign up with Google
   void _signUpWithGoogle() async {
-    // Validate phone number
-    if (_phoneNumberController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter Phone Number.'),
-        ),
-      );
-      return;
-    }
-
-    // Validate Ghanaian phone number format
-    final ghanaPhoneNumberRegex = RegExp(r'^[0][2-9][0-9]{8}$');
-    if (!ghanaPhoneNumberRegex.hasMatch(_phoneNumberController.text)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Invalid Ghanaian Phone Number.'),
-        ),
-      );
-      return;
-    }
-
     setState(() {
       _isSigningUpWithGoogle = true;
     });
     String referenceNumber = _referenceNumberController.text;
-    String phoneNumber = _phoneNumberController.text;
 
     try {
       // Perform Google sign-in
       User? user = await FirebaseAuthService().signInWithGoogle();
 
       if (user != null) {
-        // Check if user already exists in the database
+        // Check if student already exists in the database
         DocumentSnapshot userDoc = await FirebaseFirestore.instance
-            .collection('users')
+            .collection('students')
             .doc(user.uid)
             .get();
 
         if (userDoc.exists) {
-          // User already exists, handle accordingly (e.g., log in the user)
+          // Student already exists, handle accordingly (e.g., log in the user)
           Fluttertoast.showToast(msg: "Google account already exists!");
           Navigator.push(
             context,
@@ -722,19 +625,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
           String defaultCounsellorId = await _getDefaultCounsellorId();
           // Add user to the database
           await FirebaseFirestore.instance
-              .collection('users')
+              .collection('students')
               .doc(user.uid)
               .set({
             'fullName': user.displayName,
             'email': user.email,
-            'role': 'Student',
             'Reference number': referenceNumber,
-            'phoneNumber': phoneNumber,
             'assignedCounsellor': defaultCounsellorId,
             'createdAt': FieldValue.serverTimestamp(),
           });
-          await UserSession().saveSession(user.uid, _referenceNumberController.text.trim());
-          await ChatService().saveUserIdToSharedPreference(referenceNumber);
+          await UserSession().saveSession(
+  user.uid,
+  _referenceNumberController.text.trim(),
+  _fullNameController.text.trim()
+);
 
           Fluttertoast.showToast(msg: "Sign up successful");
           setState(() {

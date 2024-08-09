@@ -350,90 +350,29 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 
   void _signIn() async {
-    if (_signInformKey.currentState!.validate()) {
-      setState(() {
-        _isSigningIn = true;
-      });
-
-      String email = _emailController.text;
-      String password = _passwordController.text;
-
-      User? user = await _auth.signIn(email, password);
-
-      setState(() {
-        _isSigningIn = false;
-      });
-
-      if (user != null) {
-        String referenceNumber = await _fetchReferenceNumber(user.uid);
-
-        if (referenceNumber.isNotEmpty) {
-          await UserSession().saveSession(user.uid, referenceNumber);
-
-          Navigator.push(
-            // ignore: use_build_context_synchronously
-            context,
-            MaterialPageRoute(
-                builder: (context) => const HomeScreen()),
-          );
-          Fluttertoast.showToast(msg: 'Sign in successful!');
-        } else {
-          Fluttertoast.showToast(msg: 'Error: Reference number not found!');
-        }
-      } else {
-        Fluttertoast.showToast(msg: 'Sign in failed!');
-      }
-    } else {
-      setState(() {
-        _emailError = _emailController.text.isEmpty ? 'Please enter Email' : null;
-        _passwordError = _passwordController.text.isEmpty ? 'Please enter Password' : null;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please complete the form and agree to the terms.'),
-        ),
-      );
-    }
-  }
-
-  Future<String> _fetchReferenceNumber(String userId) async {
-    try {
-      DocumentSnapshot snapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userId)
-          .get();
-      if (snapshot.exists) {
-        return (snapshot.data() as Map<String, dynamic>)['Reference number'] ?? '';
-      } else {
-        return '';
-      }
-    } catch (e) {
-      Fluttertoast.showToast(msg: 'Error fetching reference number: $e');
-      return '';
-    }
-  }
-
-  void _signInWithGoogle() async {
+  if (_signInformKey.currentState!.validate()) {
     setState(() {
-      _isSigningInWithGoogle = true;
+      _isSigningIn = true;
     });
 
-    User? user = await _auth.signInWithGoogle();
+    String email = _emailController.text;
+    String password = _passwordController.text;
+
+    User? user = await _auth.signIn(email, password);
 
     setState(() {
-      _isSigningInWithGoogle = false;
+      _isSigningIn = false;
     });
 
     if (user != null) {
-      String referenceNumber = await _fetchReferenceNumber(user.uid);
+      Map<String, String> details = await _fetchStudentDetails(user.uid);
 
-      if (referenceNumber.isNotEmpty) {
-        await UserSession().saveSession(user.uid, referenceNumber);
+      if (details['referenceNumber']!.isNotEmpty) {
+        await UserSession().saveSession(user.uid, details['referenceNumber']!, details['fullName']!);
 
         Navigator.push(
           context,
-          MaterialPageRoute(
-              builder: (context) => const HomeScreen()),
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
         );
         Fluttertoast.showToast(msg: 'Sign in successful!');
       } else {
@@ -442,5 +381,87 @@ class _SignInScreenState extends State<SignInScreen> {
     } else {
       Fluttertoast.showToast(msg: 'Sign in failed!');
     }
+  } else {
+    setState(() {
+      _emailError = _emailController.text.isEmpty ? 'Please enter Email' : null;
+      _passwordError = _passwordController.text.isEmpty ? 'Please enter Password' : null;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Please complete the form and agree to the terms.'),
+      ),
+    );
   }
+}
+
+Future<Map<String, String>> _fetchStudentDetails(String userId) async {
+  try {
+    // Get details from UserSession first
+    Map<String, String> sessionDetails = await UserSession().getSessionDetails();
+    
+    if (sessionDetails['referenceNumber']!.isNotEmpty) {
+      return sessionDetails;
+    }
+
+    // If session details are not available, fetch from Firestore
+    DocumentSnapshot snapshot = await FirebaseFirestore.instance
+        .collection('students')
+        .doc(userId)
+        .get();
+
+    if (snapshot.exists) {
+      final data = snapshot.data() as Map<String, dynamic>;
+      String referenceNumber = data['Reference number'] ?? '';
+      String fullName = data['fullName'] ?? '';
+      await UserSession().saveSession(userId, referenceNumber, fullName); // Update session
+      return {
+        'referenceNumber': referenceNumber,
+        'fullName': fullName,
+      };
+    } else {
+      return {
+        'referenceNumber': '',
+        'fullName': '',
+      };
+    }
+  } catch (e) {
+    Fluttertoast.showToast(msg: 'Error fetching student details: $e');
+    return {
+      'referenceNumber': '',
+      'fullName': '',
+    };
+  }
+}
+
+
+
+  void _signInWithGoogle() async {
+  setState(() {
+    _isSigningInWithGoogle = true;
+  });
+
+  User? user = await _auth.signInWithGoogle();
+
+  setState(() {
+    _isSigningInWithGoogle = false;
+  });
+
+  if (user != null) {
+    Map<String, String> details = await _fetchStudentDetails(user.uid);
+
+    if (details['referenceNumber']!.isNotEmpty) {
+      await UserSession().saveSession(user.uid, details['referenceNumber']!, details['fullName']!);
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+      );
+      Fluttertoast.showToast(msg: 'Sign in successful!');
+    } else {
+      Fluttertoast.showToast(msg: 'Error: Reference number not found!');
+    }
+  } else {
+    Fluttertoast.showToast(msg: 'Sign in failed!');
+  }
+}
 }

@@ -8,26 +8,25 @@ import 'user_session.dart';
 class LocationService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   String? _studentUid;
+  String? _studentName;
+  String? _referenceNumber;
   Timer? _locationUpdateTimer;
 
-  // Initialize LocationService
   Future<void> initialize() async {
     final userSession = UserSession();
     await userSession.loadSession();
     _studentUid = userSession.studentId;
+    _studentName = userSession.studentName;
+    _referenceNumber = userSession.referenceNumber;
   }
 
-  // Get the current position
   Future<Position> getCurrentPosition() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       throw Exception('Location services are disabled.');
     }
 
-    permission = await Geolocator.checkPermission();
+    LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
@@ -44,35 +43,31 @@ class LocationService {
     );
   }
 
-  // Update student's location in Firestore
   Future<void> updateLocation() async {
     await _ensureInitialized();
     try {
       Position position = await getCurrentPosition();
-
-      await _firestore.collection('users').doc(_studentUid!).update({
+      await _firestore.collection('students').doc(_studentUid!).update({
         'latitude': position.latitude,
         'longitude': position.longitude,
         'lastUpdated': FieldValue.serverTimestamp(),
       });
-
     } catch (e) {
       Fluttertoast.showToast(msg: "Failed to update location: $e");
       rethrow;
     }
   }
 
-  // Send help request and start live location updates
   Future<void> sendHelpRequest() async {
     await _ensureInitialized();
     try {
       Position position = await getCurrentPosition();
       String trackingId = DateTime.now().millisecondsSinceEpoch.toString();
-      
+
       await _firestore.collection('help_requests').doc(trackingId).set({
         'studentUid': _studentUid!,
-        'studentName': await getStudentName(),
-        'referenceNumber': await getStudentReferenceNumber(),
+        'studentName': _studentName,
+        'referenceNumber': _referenceNumber,
         'initialLocation': GeoPoint(position.latitude, position.longitude),
         'currentLocation': GeoPoint(position.latitude, position.longitude),
         'timestamp': FieldValue.serverTimestamp(),
@@ -80,9 +75,7 @@ class LocationService {
         'status': 'active',
       });
 
-      // Start sending live location updates
       startLiveLocationUpdates(trackingId);
-
       Fluttertoast.showToast(msg: "Help request sent to the police app.");
     } catch (e) {
       Fluttertoast.showToast(msg: "Failed to send help request: $e");
@@ -92,12 +85,12 @@ class LocationService {
 
   void startLiveLocationUpdates(String trackingId) {
     _locationUpdateTimer?.cancel();
-    _locationUpdateTimer = Timer.periodic(Duration(seconds: 10), (timer) async {
+    _locationUpdateTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
       try {
         Position position = await getCurrentPosition();
         await updateLiveLocation(trackingId, position);
       } catch (e) {
-        print("Error updating live location: $e");
+        Fluttertoast.showToast(msg: "Error updating live location: $e");
       }
     });
   }
@@ -109,26 +102,10 @@ class LocationService {
     });
   }
 
-  Future<String> getStudentName() async {
-    final userDoc = await _firestore.collection('users').doc(_studentUid!).get();
-    return userDoc.data()?['name'] ?? 'Unknown Student';
-  }
-
-  Future<String> getStudentReferenceNumber() async {
-    final userSession = UserSession();
-    await userSession.loadSession();
-    return userSession.referenceNumber ?? 'Unknown';
-  }
-
-  // Find the nearest police officer
   Future<String?> findNearestPolice(Position studentLocation) async {
     await _ensureInitialized();
     try {
-      final policeLocations = await _firestore
-          .collection('users')
-          .where('role', isEqualTo: 'Police')
-          .get();
-
+      final policeLocations = await _firestore.collection('police_officers').get();
       double minDistance = double.infinity;
       String? nearestPoliceId;
 
@@ -153,7 +130,6 @@ class LocationService {
     }
   }
 
-  // Store the given position as a danger zone in Firestore
   Future<void> storeLocationAsDangerZone(Position position) async {
     await _ensureInitialized();
     try {
@@ -170,7 +146,6 @@ class LocationService {
     }
   }
 
-  // Fetch all danger zones from Firestore
   Future<List<LatLng>> getDangerZones() async {
     await _ensureInitialized();
     try {
@@ -184,14 +159,12 @@ class LocationService {
     }
   }
 
-  // Ensure that studentUid is initialized
   Future<void> _ensureInitialized() async {
     if (_studentUid == null) {
       await initialize();
     }
   }
 
-  // Cancel the location update timer when it's no longer needed
   void dispose() {
     _locationUpdateTimer?.cancel();
   }

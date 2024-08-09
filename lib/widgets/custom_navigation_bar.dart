@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'chat_icon_button.dart';
+import '../dashboard/speak to counsellor/chat_icon_button.dart';
 
 class CustomBottomNavigationBar extends StatelessWidget {
   final int selectedIndex;
