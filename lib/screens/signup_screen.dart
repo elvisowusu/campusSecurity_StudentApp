@@ -2,7 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:student_app/common/enum/chat_services.dart';
+import 'package:student_app/screens/home_screen.dart';
+import 'package:student_app/screens/phone_otp.dart';
 import 'package:student_app/screens/signin_screen.dart';
 import 'package:student_app/services/user_session.dart';
 import 'package:student_app/theme/theme.dart';
@@ -475,78 +476,73 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   void _signUp() async {
-    if (_signUpFormKey.currentState!.validate() && agreePersonalData) {
-      // Loader
+  if (_signUpFormKey.currentState!.validate() && agreePersonalData) {
+    setState(() {
+      _isSigningUp = true;
+    });
+
+    String fullName = _fullNameController.text;
+    String email = _emailController.text;
+    String password = _passwordController.text;
+    String referenceNumber = _referenceNumberController.text;
+
+    try {
+      User? user = await _auth.signUp(email, password);
       setState(() {
-        _isSigningUp = true;
+        _isSigningUp = false;
       });
 
-      String fullName = _fullNameController.text;
-      String email = _emailController.text;
-      String password = _passwordController.text;
-      String referenceNumber = _referenceNumberController.text;
+      if (user != null) {
+        String defaultCounsellorId = await _getDefaultCounsellorId();
 
-      try {
-        // Perform student registration
-        User? user = await _auth.signUp(email, password);
-        setState(() {
-          _isSigningUp = false;
+        await FirebaseFirestore.instance
+            .collection('students')
+            .doc(user.uid)
+            .set({
+          'fullName': fullName,
+          'Reference number': referenceNumber,
+          'email': email,
+          'assignedCounsellor': defaultCounsellorId,
+          'createdAt': FieldValue.serverTimestamp(),
         });
 
-        if (user != null) {
-          // Assign a default counsellor (first counsellor from a list or a specific ID)
-          String defaultCounsellorId =
-              await _getDefaultCounsellorId(); // Implement this method
+        await UserSession().saveSession(
+          user.uid,
+          referenceNumber.trim(),
+          fullName.trim(),
+        );
 
-          // Store student details including assigned counsellor
-          await FirebaseFirestore.instance
-              .collection('students')
-              .doc(user.uid)
-              .set({
-            'fullName': fullName,
-            'Reference number': referenceNumber,
-            'email': email,
-            'assignedCounsellor':
-                defaultCounsellorId, // Assign default counsellor
-            'createdAt': FieldValue.serverTimestamp(),
-          });
-
-          await UserSession().saveSession(
-  user.uid,
-  _referenceNumberController.text.trim(),
-  _fullNameController.text.trim()
-);
-
-          Fluttertoast.showToast(msg: "Sign up successful");
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (e) => const SignInScreen()),
-          );
-        } else {
-          Fluttertoast.showToast(msg: "Some error happened");
-        }
-      } catch (e) {
-        Fluttertoast.showToast(msg: "Error signing up: $e");
+        Fluttertoast.showToast(msg: "Sign up successful");
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const MyPhone(),
+          ),
+        );
+      } else {
+        Fluttertoast.showToast(msg: "Some error happened");
       }
-    } else {
-      setState(() {
-        // Update error messages if form is not valid
-        _fullNameError =
-            _fullNameController.text.isEmpty ? 'Please enter Full name' : null;
-        _referenceNumberError = _referenceNumberController.text.isEmpty
-            ? 'Please enter Reference Number'
-            : null;
-        _emailError =
-            _emailController.text.isEmpty ? 'Please enter Email' : null;
-        _passwordError =
-            _passwordController.text.isEmpty ? 'Please enter Password' : null;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Please complete the form and agree to the terms.')),
-      );
+    } catch (e) {
+      Fluttertoast.showToast(msg: "Error signing up: $e");
     }
+  } else {
+    setState(() {
+      _fullNameError =
+          _fullNameController.text.isEmpty ? 'Please enter Full name' : null;
+      _referenceNumberError = _referenceNumberController.text.isEmpty
+          ? 'Please enter Reference Number'
+          : null;
+      _emailError =
+          _emailController.text.isEmpty ? 'Please enter Email' : null;
+      _passwordError =
+          _passwordController.text.isEmpty ? 'Please enter Password' : null;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+          content: Text('Please complete the form and agree to the terms.')),
+    );
   }
+}
 
 // Function to get a random counsellor ID  who has fewer than 20 students
   Future<String> _getDefaultCounsellorId() async {
@@ -598,67 +594,64 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   // Sign up with Google
   void _signUpWithGoogle() async {
-    setState(() {
-      _isSigningUpWithGoogle = true;
-    });
-    String referenceNumber = _referenceNumberController.text;
+  setState(() {
+    _isSigningUpWithGoogle = true;
+  });
 
-    try {
-      // Perform Google sign-in
-      User? user = await FirebaseAuthService().signInWithGoogle();
+  try {
+    // Perform Google sign-in
+    User? user = await FirebaseAuthService().signInWithGoogle();
 
-      if (user != null) {
-        // Check if student already exists in the database
-        DocumentSnapshot userDoc = await FirebaseFirestore.instance
+    if (user != null) {
+      // Check if student already exists in the database
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('students')
+          .doc(user.uid)
+          .get();
+
+      if (userDoc.exists) {
+        // Student already exists, handle accordingly (e.g., log in the user)
+        Fluttertoast.showToast(msg: "Google account already exists!");
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      } else {
+        String defaultCounsellorId = await _getDefaultCounsellorId();
+        // Add user to the database
+        await FirebaseFirestore.instance
             .collection('students')
             .doc(user.uid)
-            .get();
+            .set({
+          'fullName': user.displayName,
+          'email': user.email,
+          'Reference number': _referenceNumberController.text,
+          'assignedCounsellor': defaultCounsellorId,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
 
-        if (userDoc.exists) {
-          // Student already exists, handle accordingly (e.g., log in the user)
-          Fluttertoast.showToast(msg: "Google account already exists!");
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (e) => const SignInScreen()),
-          );
-        } else {
-          String defaultCounsellorId = await _getDefaultCounsellorId();
-          // Add user to the database
-          await FirebaseFirestore.instance
-              .collection('students')
-              .doc(user.uid)
-              .set({
-            'fullName': user.displayName,
-            'email': user.email,
-            'Reference number': referenceNumber,
-            'assignedCounsellor': defaultCounsellorId,
-            'createdAt': FieldValue.serverTimestamp(),
-          });
-          await UserSession().saveSession(
-  user.uid,
-  _referenceNumberController.text.trim(),
-  _fullNameController.text.trim()
-);
+        await UserSession().saveSession(
+          user.uid,
+          _referenceNumberController.text.trim(),
+          user.displayName ?? '',
+        );
 
-          Fluttertoast.showToast(msg: "Sign up successful");
-          setState(() {
-            _isSigningUpWithGoogle = false;
-          });
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (e) => const SignInScreen()),
-          );
-        }
-      } else {
-        Fluttertoast.showToast(msg: "Some error happened");
+        Fluttertoast.showToast(msg: "Sign up successful");
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MyPhone()),
+        );
       }
-    } catch (e) {
-      Fluttertoast.showToast(msg: "Error signing up with Google: $e");
-      Fluttertoast.showToast(msg: "Failed to sign up with Google.");
-    } finally {
-      setState(() {
-        _isSigningUpWithGoogle = false;
-      });
+    } else {
+      Fluttertoast.showToast(msg: "Some error happened");
     }
+  } catch (e) {
+    Fluttertoast.showToast(msg: "Error signing up with Google: $e");
+  } finally {
+    setState(() {
+      _isSigningUpWithGoogle = false;
+    });
   }
+}
 }

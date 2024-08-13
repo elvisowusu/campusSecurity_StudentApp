@@ -16,6 +16,7 @@ class StudentPattern extends StatefulWidget {
 
 class _StudentPatternState extends State<StudentPattern> {
   bool _helpRequested = false;
+  bool _isLoading = false;
   late final LocationService _locationService;
   StreamSubscription<String>? _statusSubscription;
 
@@ -23,6 +24,7 @@ class _StudentPatternState extends State<StudentPattern> {
   void initState() {
     super.initState();
     _initializeLocationService();
+    _checkLocationPermission();
   }
 
   Future<void> _initializeLocationService() async {
@@ -33,6 +35,39 @@ class _StudentPatternState extends State<StudentPattern> {
     await _locationService.initialize();
   }
 
+  Future<void> _checkLocationPermission() async {
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
+      _showPermissionDialog();
+    }
+  }
+
+  void _showPermissionDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Location Permission'),
+          content: const Text('This app needs location access to send help requests. Please grant location permission.'),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                LocationPermission permission = await Geolocator.requestPermission();
+                if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
+                  Fluttertoast.showToast(msg: "Location permission denied. Cannot send help request.");
+                } else {
+                  Fluttertoast.showToast(msg: "Location permission granted.");
+                }
+              },
+              child: const Text('Allow'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   void dispose() {
     _locationService.dispose();
@@ -41,15 +76,14 @@ class _StudentPatternState extends State<StudentPattern> {
   }
 
   Future<void> _sendHelpRequest() async {
-    if (!_helpRequested) {
+    if (!_helpRequested && !_isLoading) {
       try {
-        LocationPermission permission = await Geolocator.checkPermission();
-        if (permission == LocationPermission.denied) {
-          permission = await Geolocator.requestPermission();
-        }
+        setState(() {
+          _isLoading = true;
+        });
 
-        if (permission == LocationPermission.whileInUse ||
-            permission == LocationPermission.always) {
+        LocationPermission permission = await Geolocator.checkPermission();
+        if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
           // Send help request
           await _locationService.sendHelpRequest();
           
@@ -70,9 +104,7 @@ class _StudentPatternState extends State<StudentPattern> {
           setState(() {
             _helpRequested = true;
           });
-          
-          Fluttertoast.showToast(msg: "Help request sent. Sharing location with police.");
-          
+
           // Start listening to status updates
           _statusSubscription = _locationService.getHelpRequestStatus().listen((status) {
             if (status == 'resolved') {
@@ -88,6 +120,10 @@ class _StudentPatternState extends State<StudentPattern> {
         }
       } catch (e) {
         Fluttertoast.showToast(msg: "Error: ${e.toString()}");
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
       }
     } else {
       Fluttertoast.showToast(msg: "Help request already sent. Police have been notified.");
@@ -124,10 +160,12 @@ class _StudentPatternState extends State<StudentPattern> {
               child: Container(
                 color: _helpRequested ? Colors.red : Colors.yellow.shade600,
                 padding: const EdgeInsets.all(16),
-                child: Text(
-                  _helpRequested ? 'Help requested' : 'Tap to request help',
-                  style: const TextStyle(color: Colors.black, fontSize: 18),
-                ),
+                child: _isLoading
+                    ? const CircularProgressIndicator()
+                    : Text(
+                        _helpRequested ? 'Help requested' : 'Tap to request help',
+                        style: const TextStyle(color: Colors.black, fontSize: 18),
+                      ),
               ),
             ),
             const SizedBox(height: 20),

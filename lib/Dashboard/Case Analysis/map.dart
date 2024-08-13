@@ -13,24 +13,26 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> {
-  final LocationService _locationService; // Use the service with the required parameter
+  final LocationService _locationService = LocationService();
   final Set<Marker> _markers = {};
   GoogleMapController? _mapController;
   StreamSubscription<Position>? _positionSubscription;
   Marker? _currentLocationMarker;
   final LatLng _initialCameraPosition = const LatLng(0.0, 0.0);
 
-  bool _isLoading = true; // Track loading state
-
-  _MapPageState() : _locationService = LocationService(); // Replace with actual student UID
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    _initializeLocationService();
+  }
+
+  Future<void> _initializeLocationService() async {
+    await _locationService.initialize();
     _loadDangerZones();
     _initializeLocationUpdates();
 
-    // Set a delay to hide the loading indicator after 7 seconds
     Future.delayed(const Duration(seconds: 7), () {
       if (mounted) {
         setState(() {
@@ -43,6 +45,7 @@ class _MapPageState extends State<MapPage> {
   @override
   void dispose() {
     _positionSubscription?.cancel();
+    _locationService.dispose();
     super.dispose();
   }
 
@@ -64,8 +67,10 @@ class _MapPageState extends State<MapPage> {
           ),
         );
       });
+      print("Loaded ${dangerZones.length} danger zones");
     } catch (e) {
-      Fluttertoast.showToast(msg: "Error loading danger zones: ${e.toString()}");
+      print("Error loading danger zones: $e");
+      Fluttertoast.showToast(msg: "Error loading danger zones: $e");
     }
   }
 
@@ -73,10 +78,11 @@ class _MapPageState extends State<MapPage> {
     _positionSubscription = Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
         accuracy: LocationAccuracy.best,
-        distanceFilter: 5,
+        distanceFilter: 10,
       ),
     ).listen(
       (Position position) {
+        print("New position received: ${position.latitude}, ${position.longitude}");
         LatLng currentLatLng = LatLng(position.latitude, position.longitude);
         _updateCurrentLocationMarker(currentLatLng);
         if (_mapController != null) {
@@ -86,7 +92,8 @@ class _MapPageState extends State<MapPage> {
         }
       },
       onError: (error) {
-        Fluttertoast.showToast(msg: "Error in location updates: ${error.toString()}");
+        print("Error in location updates: $error");
+        Fluttertoast.showToast(msg: "Error in location updates: $error");
       },
     );
   }
@@ -100,12 +107,14 @@ class _MapPageState extends State<MapPage> {
         markerId: const MarkerId('current_location'),
         position: position,
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-        infoWindow: const InfoWindow(
+        infoWindow: InfoWindow(
           title: 'Your Location',
+          snippet: 'Updated at ${DateTime.now().toString()}',
         ),
       );
       _markers.add(_currentLocationMarker!);
     });
+    print("Updated current location marker: ${position.latitude}, ${position.longitude}");
   }
 
   @override
@@ -126,13 +135,15 @@ class _MapPageState extends State<MapPage> {
               Geolocator.getCurrentPosition(
                 desiredAccuracy: LocationAccuracy.bestForNavigation,
               ).then((position) {
+                print("Initial position: ${position.latitude}, ${position.longitude}");
                 LatLng currentLatLng = LatLng(position.latitude, position.longitude);
                 _mapController!.animateCamera(
                   CameraUpdate.newLatLng(currentLatLng),
                 );
                 _updateCurrentLocationMarker(currentLatLng);
               }).catchError((error) {
-                Fluttertoast.showToast(msg: "Error getting current position: ${error.toString()}");
+                print("Error getting current position: $error");
+                Fluttertoast.showToast(msg: "Error getting current position: $error");
               });
             },
             initialCameraPosition: CameraPosition(

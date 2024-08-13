@@ -19,6 +19,7 @@ class LocationService {
     _studentUid = userSession.studentId;
     _studentName = userSession.studentName;
     _referenceNumber = userSession.referenceNumber;
+    print("LocationService initialized for student: $_studentName");
   }
 
   Future<Position> getCurrentPosition() async {
@@ -53,7 +54,9 @@ class LocationService {
         'longitude': position.longitude,
         'lastUpdated': FieldValue.serverTimestamp(),
       });
+      print("Updated location for $_studentName: ${position.latitude}, ${position.longitude}");
     } catch (e) {
+      print("Failed to update location: $e");
       Fluttertoast.showToast(msg: "Failed to update location: $e");
       rethrow;
     }
@@ -78,8 +81,10 @@ class LocationService {
       });
 
       startLiveLocationUpdates(trackingId);
+      print("Help request sent for $_studentName. Tracking ID: $trackingId");
       Fluttertoast.showToast(msg: "Help request sent to the police app.");
     } catch (e) {
+      print("Failed to send help request: $e");
       Fluttertoast.showToast(msg: "Failed to send help request: $e");
       rethrow;
     }
@@ -87,11 +92,12 @@ class LocationService {
 
   void startLiveLocationUpdates(String trackingId) {
     _locationUpdateTimer?.cancel();
-    _locationUpdateTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
+    _locationUpdateTimer = Timer.periodic(const Duration(seconds: 10), (timer) async {
       try {
         Position position = await getCurrentPosition();
         await updateLiveLocation(trackingId, position);
       } catch (e) {
+        print("Error updating live location: $e");
         Fluttertoast.showToast(msg: "Error updating live location: $e");
       }
     });
@@ -102,10 +108,9 @@ class LocationService {
       'currentLocation': GeoPoint(position.latitude, position.longitude),
       'lastUpdated': FieldValue.serverTimestamp(),
     });
+    print("Updated live location for $_studentName: ${position.latitude}, ${position.longitude}");
   }
 
-
-  // New method to check help request status
   Stream<String> getHelpRequestStatus() {
     if (_currentTrackingId == null) {
       throw Exception('No active help request');
@@ -117,7 +122,6 @@ class LocationService {
         .map((snapshot) => snapshot.data()?['status'] as String? ?? 'unknown');
   }
 
-  // New method to end help request
   Future<void> endHelpRequest() async {
     if (_currentTrackingId == null) {
       throw Exception('No active help request');
@@ -128,6 +132,7 @@ class LocationService {
     });
     _locationUpdateTimer?.cancel();
     _currentTrackingId = null;
+    print("Help request ended for $_studentName");
   }
 
   Future<String?> findNearestPolice(Position studentLocation) async {
@@ -151,8 +156,10 @@ class LocationService {
         }
       }
 
+      print("Nearest police found for $_studentName: $nearestPoliceId");
       return nearestPoliceId;
     } catch (e) {
+      print("Failed to find nearest police: $e");
       Fluttertoast.showToast(msg: "Failed to find nearest police: $e");
       return null;
     }
@@ -167,8 +174,10 @@ class LocationService {
         'timestamp': FieldValue.serverTimestamp(),
       });
 
+      print("Location added as danger zone: ${position.latitude}, ${position.longitude}");
       Fluttertoast.showToast(msg: "Location added to Firestore as a danger zone.");
     } catch (e) {
+      print("Failed to add location to Firestore: $e");
       Fluttertoast.showToast(msg: "Failed to add location to Firestore: $e");
       rethrow;
     }
@@ -178,10 +187,13 @@ class LocationService {
     await _ensureInitialized();
     try {
       final snapshot = await _firestore.collection('danger_zones').get();
-      return snapshot.docs.map((doc) {
+      List<LatLng> dangerZones = snapshot.docs.map((doc) {
         return LatLng(doc['latitude'], doc['longitude']);
       }).toList();
+      print("Fetched ${dangerZones.length} danger zones");
+      return dangerZones;
     } catch (e) {
+      print("Failed to fetch danger zones: $e");
       Fluttertoast.showToast(msg: "Failed to fetch danger zones: $e");
       return [];
     }
@@ -195,5 +207,6 @@ class LocationService {
 
   void dispose() {
     _locationUpdateTimer?.cancel();
+    print("LocationService disposed for $_studentName");
   }
 }
