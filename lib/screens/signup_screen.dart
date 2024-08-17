@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:student_app/screens/home_screen.dart';
-import 'package:student_app/screens/phone_otp.dart';
 import 'package:student_app/screens/signin_screen.dart';
 import 'package:student_app/services/user_session.dart';
 import 'package:student_app/theme/theme.dart';
@@ -516,7 +515,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => const MyPhone(),
+            builder: (context) => const HomeScreen(),
           ),
         );
       } else {
@@ -640,7 +639,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const MyPhone()),
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
         );
       }
     } else {
