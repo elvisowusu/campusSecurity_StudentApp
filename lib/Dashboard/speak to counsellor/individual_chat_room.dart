@@ -30,7 +30,20 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
         .collection('chats')
         .doc(_currentUser!.uid)
         .collection('messages');
+         _markMessagesAsRead();
   }
+  void _markMessagesAsRead() async {
+  QuerySnapshot unreadMessages = await _messagesCollection
+      .where('senderId', isEqualTo: widget.contactId)
+      .where('read', isEqualTo: false)
+      .get();
+
+  WriteBatch batch = _firestore.batch();
+  for (QueryDocumentSnapshot doc in unreadMessages.docs) {
+    batch.update(doc.reference, {'read': true});
+  }
+  await batch.commit();
+}
 
 
   Future<void> sendMessage(MessageType messageType, String content) async {
@@ -65,6 +78,7 @@ class _IndividualChatPageState extends State<IndividualChatPage> {
       'timestamp': Timestamp.now(),
       'type': 'text',
       'participants': [_currentUser!.uid, widget.contactId],
+      'read': false, 
     });
 
     _controller.clear();

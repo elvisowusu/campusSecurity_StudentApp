@@ -15,7 +15,7 @@ class ChatIconButton extends StatelessWidget {
     return StreamBuilder<DocumentSnapshot>(
       stream: _firestore.collection('students').doc(currentUser!.uid).snapshots(),
       builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-        if (!snapshot.hasData) {
+        if (!snapshot.hasData || snapshot.data == null || !snapshot.data!.exists) {
           return const IconButton(
             icon: Icon(Icons.chat_rounded),
             tooltip: 'Loading...',
@@ -23,46 +23,115 @@ class ChatIconButton extends StatelessWidget {
           );
         }
 
-        var data = snapshot.data!.data() as Map<String, dynamic>;
-        var counselorId = data['assignedCounsellor'];
+        var data = snapshot.data!.data();
+        if (data == null || data is! Map<String, dynamic>) {
+          return const IconButton(
+            icon: Icon(Icons.chat_rounded),
+            tooltip: 'Error: Invalid data',
+            onPressed: null,
+          );
+        }
 
-        return GestureDetector(
-          onTap: counselorId == null
-              ? null
-              : () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          IndividualChatPage(contactId: counselorId),
-                    ),
-                  );
-                },
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Container(
-                padding: const EdgeInsets.all(9.0), // Match the padding
-                decoration: BoxDecoration(
-                  color: Colors.transparent,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white,
-                    width: 2.0, // Add a border to match the style
+        var counselorId = data['assignedCounsellor'];
+        return StreamBuilder<QuerySnapshot>(
+          stream: _firestore
+              .collection('counselors')
+              .doc(counselorId)
+              .collection('chats')
+              .doc(currentUser!.uid)
+              .collection('messages')
+              .where('senderId', isEqualTo: counselorId)
+              .where('read', isEqualTo: false)
+              .snapshots(),
+          builder: (context, messageSnapshot) {
+            int unreadCount = messageSnapshot.hasData ? messageSnapshot.data!.docs.length : 0;
+
+            return Stack(
+              children: [
+                GestureDetector(
+                  onTap: counselorId == null
+                      ? null
+                      : () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => IndividualChatPage(contactId: counselorId),
+                            ),
+                          );
+                          // Clear the unread count after navigation
+                          _clearUnreadCount(counselorId);
+                        },
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Container(
+                        padding: const EdgeInsets.all(9.0),
+                        decoration: BoxDecoration(
+                          color: Colors.transparent,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white,
+                            width: 2.0,
+                          ),
+                        ),
+                        child: SvgPicture.asset(
+                          'assets/chat.svg',
+                          color: Colors.white,
+                          width: 20,
+                          height: 20,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                child: SvgPicture.asset(
-                  'assets/chat.svg',
-                  // ignore: deprecated_member_use
-                  color: Colors.white, // Match icon color
-                  width: 20,
-                  height: 20,
-                ),
-              ),
-            ],
-          ),
+                if (unreadCount > 0)
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 16,
+                        minHeight: 16,
+                      ),
+                      child: Text(
+                        '$unreadCount',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
         );
       },
     );
+  }
+
+  Future<void> _clearUnreadCount(String counselorId) async {
+    // Get the unread messages and mark them as read
+    QuerySnapshot unreadMessages = await _firestore
+        .collection('counselors')
+        .doc(counselorId)
+        .collection('chats')
+        .doc(currentUser!.uid)
+        .collection('messages')
+        .where('senderId', isEqualTo: counselorId)
+        .where('read', isEqualTo: false)
+        .get();
+
+    WriteBatch batch = _firestore.batch();
+    for (QueryDocumentSnapshot doc in unreadMessages.docs) {
+      batch.update(doc.reference, {'read': true});
+    }
+    await batch.commit();
   }
 }
