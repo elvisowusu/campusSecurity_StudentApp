@@ -84,6 +84,16 @@ class _IndividualChatPageState extends State<IndividualChatPage> with TickerProv
         'referenceNumber': referenceNumber,
       });
     }
+     String? replyingToMessageId;
+  if (_replyingToMessage != null) {
+    QuerySnapshot replyQuery = await _messagesCollection
+        .where('content', isEqualTo: _replyingToMessage)
+        .limit(1)
+        .get();
+    if (replyQuery.docs.isNotEmpty) {
+      replyingToMessageId = replyQuery.docs.first.id;
+    }
+  }
 
     await _messagesCollection.add({
       'senderId': _currentUser!.uid,
@@ -93,6 +103,7 @@ class _IndividualChatPageState extends State<IndividualChatPage> with TickerProv
       'participants': [_currentUser!.uid, widget.contactId],
       'read': false,
       'replyingTo': _replyingToMessage,
+    'replyingToId': replyingToMessageId,
     });
 
     setState(() {
@@ -112,14 +123,31 @@ class _IndividualChatPageState extends State<IndividualChatPage> with TickerProv
       );
     }
   }
+  void _scrollToMessage(String messageId) {
+  for (int i = 0; i < _scrollController.position.maxScrollExtent.toInt(); i++) {
+    if (_animationControllers.containsKey(messageId)) {
+      _scrollController.animateTo(
+        i.toDouble(),
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+      return;
+    }
+  }
+}
 
   String _formatTimestamp(Timestamp timestamp) {
-    DateTime dateTime = timestamp.toDate();
-    return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
-  }
+  DateTime dateTime = timestamp.toDate();
+  int hour = dateTime.hour;
+  String period = hour >= 12 ? 'PM' : 'AM';
+  hour = hour % 12;
+  hour = hour == 0 ? 12 : hour; // convert hour '0' to '12' for 12 AM/PM
+  return '${hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')} $period';
+}
+
 
   Widget _buildMessageBubble(String message, bool isMe, String? replyingToMessage,
-      Timestamp timestamp, String messageId, MessageType messageType) {
+      Timestamp timestamp, String messageId, MessageType messageType, String? replyingToMessageId) {
     if (!_animationControllers.containsKey(messageId)) {
       _animationControllers[messageId] = AnimationController(
         vsync: this,
@@ -194,10 +222,16 @@ class _IndividualChatPageState extends State<IndividualChatPage> with TickerProv
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (replyingToMessage != null)
-                  Container(
+                  GestureDetector(
+                  onTap: () {
+                    if (replyingToMessageId != null) {
+                      _scrollToMessage(replyingToMessageId);
+                    }
+                  },
+                  child:Container(
                     margin: const EdgeInsets.only(bottom: 5.0),
                     padding: const EdgeInsets.all(5.0),
-                    width: max(3, 420),
+                    width: double.infinity,
                     decoration: BoxDecoration(
                       color: Colors.grey[200],
                       borderRadius: BorderRadius.circular(8.0),
@@ -210,16 +244,14 @@ class _IndividualChatPageState extends State<IndividualChatPage> with TickerProv
                       ),
                     ),
                   ),
+                  ),
                 _buildMessageContent(message, messageType),
                 const SizedBox(height: 2),
-                Align(
-                  alignment: Alignment.bottomRight,
-                  child: Text(
-                    _formatTimestamp(timestamp),
-                    style: TextStyle(
-                      fontSize: 10.0,
-                      color: Colors.grey[600],
-                    ),
+                Text(
+                  _formatTimestamp(timestamp),
+                  style: TextStyle(
+                    fontSize: 10.0,
+                    color: Colors.grey[600],
                   ),
                 ),
               ],
@@ -300,7 +332,7 @@ class _IndividualChatPageState extends State<IndividualChatPage> with TickerProv
                         Timestamp timestamp = data['timestamp'];
                         MessageType messageType = (data['type'] as String).toEnum();
                         bool isMe = senderId == _currentUser!.uid;
-
+                        String? replyingToMessageId = data['replyingToId'];
                         return _buildMessageBubble(
                           message,
                           isMe,
@@ -308,6 +340,7 @@ class _IndividualChatPageState extends State<IndividualChatPage> with TickerProv
                           timestamp,
                           document.id,
                           messageType,
+                          replyingToMessageId,
                         );
                       },
                     );
