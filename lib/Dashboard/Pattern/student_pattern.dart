@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:student_app/Dashboard/Case%20Analysis/help_request_service.dart';
 import 'package:student_app/widgets/signout.dart';
 
 import '../Case Analysis/danger_zone.dart';
@@ -59,7 +60,20 @@ Future<void> _sendHelpRequest() async {
   });
 
   try {
-    // Get the current location
+    final helpRequestService = HelpRequestService();
+    await helpRequestService.initialize();
+    await helpRequestService.sendHelpRequest();
+
+    _statusSubscription = helpRequestService.getHelpRequestStatus().listen((status) {
+      if (status == 'resolved') {
+        _statusSubscription?.cancel();
+        setState(() {
+          _isLoading = false;
+          _helpRequested = false;
+        });
+        print('Help request resolved');
+      }
+    });
     Position position = await _locationService.getCurrentPosition();
 
     // Store the location as a danger zone
