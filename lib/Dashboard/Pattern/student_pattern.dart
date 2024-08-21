@@ -3,9 +3,10 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:student_app/services/location_services.dart';
-import 'package:student_app/services/user_session.dart';
 import 'package:student_app/widgets/signout.dart';
+
+import '../Case Analysis/danger_zone.dart';
+import '../Case Analysis/location_services.dart';
 
 class StudentPattern extends StatefulWidget {
   const StudentPattern({super.key});
@@ -15,120 +16,69 @@ class StudentPattern extends StatefulWidget {
 }
 
 class _StudentPatternState extends State<StudentPattern> {
+  final LocationService _locationService = LocationService();
+final DangerZoneService _dangerZoneService = DangerZoneService();
   bool _helpRequested = false;
   bool _isLoading = false;
-  late final LocationService _locationService;
   StreamSubscription<String>? _statusSubscription;
 
   @override
   void initState() {
     super.initState();
-    _initializeLocationService();
     _checkLocationPermission();
-  }
-
-  Future<void> _initializeLocationService() async {
-    final userSession = UserSession();
-    await userSession.loadSession();
-
-    _locationService = LocationService();
-    await _locationService.initialize();
   }
 
   Future<void> _checkLocationPermission() async {
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
-      _showPermissionDialog();
+      _requestLocationPermission();
+    } else {
+      // Permission already granted, proceed with the app logic
     }
   }
 
-  void _showPermissionDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Location Permission'),
-          content: const Text('This app needs location access to send help requests. Please grant location permission.'),
-          actions: [
-            TextButton(
-              onPressed: () async {
-                Navigator.of(context).pop();
-                LocationPermission permission = await Geolocator.requestPermission();
-                if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
-                  Fluttertoast.showToast(msg: "Location permission denied. Cannot send help request.");
-                } else {
-                  Fluttertoast.showToast(msg: "Location permission granted.");
-                }
-              },
-              child: const Text('Allow'),
-            ),
-          ],
-        );
-      },
-    );
+  void _requestLocationPermission() async {
+    LocationPermission permission = await Geolocator.requestPermission();
+    if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
+      Fluttertoast.showToast(msg: "Location permission denied. Cannot send help request.");
+    } else {
+      Fluttertoast.showToast(msg: "Location permission granted.");
+    }
   }
 
   @override
   void dispose() {
-    _locationService.dispose();
     _statusSubscription?.cancel();
     super.dispose();
   }
 
-  Future<void> _sendHelpRequest() async {
-    if (!_helpRequested && !_isLoading) {
-      try {
-        setState(() {
-          _isLoading = true;
-        });
+Future<void> _sendHelpRequest() async {
+  setState(() {
+    _helpRequested = true;
+    _isLoading = true;
+  });
 
-        LocationPermission permission = await Geolocator.checkPermission();
-        if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
-          // Send help request
-          await _locationService.sendHelpRequest();
-          
-          // Update student's location
-          await _locationService.updateLocation();
-          
-          // Find nearest police
-          Position currentPosition = await _locationService.getCurrentPosition();
-          String? nearestPoliceId = await _locationService.findNearestPolice(currentPosition);
-          
-          if (nearestPoliceId != null) {
-            Fluttertoast.showToast(msg: "Nearest police officer notified.");
-          }
-          
-          // Mark current location as danger zone
-          await _locationService.storeLocationAsDangerZone(currentPosition);
+  try {
+    // Get the current location
+    Position position = await _locationService.getCurrentPosition();
 
-          setState(() {
-            _helpRequested = true;
-          });
+    // Store the location as a danger zone
+    await _dangerZoneService.storeLocationAsDangerZone(position);
 
-          // Start listening to status updates
-          _statusSubscription = _locationService.getHelpRequestStatus().listen((status) {
-            if (status == 'resolved') {
-              setState(() {
-                _helpRequested = false;
-              });
-              Fluttertoast.showToast(msg: "Help request resolved.");
-              _statusSubscription?.cancel();
-            }
-          });
-        } else {
-          Fluttertoast.showToast(msg: "Location permission denied. Cannot send help request.");
-        }
-      } catch (e) {
-        Fluttertoast.showToast(msg: "Error: ${e.toString()}");
-      } finally {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    } else {
-      Fluttertoast.showToast(msg: "Help request already sent. Police have been notified.");
-    }
+    // Simulate a delay for demonstration purposes
+    await Future.delayed(const Duration(seconds: 3));
+
+    setState(() {
+      _isLoading = false;
+    });
+  } catch (e) {
+    // Handle any errors that occurred during the help request
+    print('Error sending help request: $e');
+    setState(() {
+      _isLoading = false;
+    });
   }
+}
 
   @override
   Widget build(BuildContext context) {

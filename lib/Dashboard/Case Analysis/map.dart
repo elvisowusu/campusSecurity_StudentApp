@@ -1,9 +1,8 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:student_app/services/location_services.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'danger_zone.dart';
+import 'location_services.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -14,150 +13,84 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> {
   final LocationService _locationService = LocationService();
-  final Set<Marker> _markers = {};
+  final DangerZoneService _dangerZoneService = DangerZoneService();
   GoogleMapController? _mapController;
-  StreamSubscription<Position>? _positionSubscription;
-  Marker? _currentLocationMarker;
-  final LatLng _initialCameraPosition = const LatLng(0.0, 0.0);
-
-  bool _isLoading = true;
+  Position? _currentPosition;
+  Set<Circle> _dangerZoneCircles = {};
 
   @override
   void initState() {
     super.initState();
-    _initializeLocationService();
-  }
-
-  Future<void> _initializeLocationService() async {
-    await _locationService.initialize();
+    _getCurrentLocation();
     _loadDangerZones();
-    _initializeLocationUpdates();
-
-    Future.delayed(const Duration(seconds: 7), () {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    });
   }
 
-  @override
-  void dispose() {
-    _positionSubscription?.cancel();
-    _locationService.dispose();
-    super.dispose();
+  Future<void> _getCurrentLocation() async {
+    try {
+      _currentPosition = await _locationService.getCurrentPosition();
+      setState(() {});
+
+      // Move the camera to the current location
+      _mapController?.animateCamera(CameraUpdate.newLatLng(
+        LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+      ));
+    } catch (e) {
+      print('Error getting current location: $e');
+    }
   }
 
   Future<void> _loadDangerZones() async {
     try {
-      List<LatLng> dangerZones = await _locationService.getDangerZones();
+      List<DangerZone> dangerZones = await _dangerZoneService.getDangerZones();
       setState(() {
-        _markers.addAll(
-          dangerZones.map(
-            (latLng) => Marker(
-              markerId: MarkerId(latLng.toString()),
-              position: latLng,
-              icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-              infoWindow: InfoWindow(
-                title: 'Danger Zone',
-                snippet: '${latLng.latitude}, ${latLng.longitude}',
-              ),
-            ),
-          ),
-        );
+        _dangerZoneCircles = dangerZones
+            .map((zone) => Circle(
+                  circleId: CircleId('danger_zone_${zone.latitude}_${zone.longitude}'),
+                  center: LatLng(zone.latitude, zone.longitude),
+                  radius: zone.radius,
+                  fillColor: const Color.fromARGB(255, 204, 108, 101).withOpacity(0.3),
+                  strokeColor: const Color.fromARGB(255, 240, 170, 165),
+                  strokeWidth: 1,
+                ))
+            .toSet();
       });
-      print("Loaded ${dangerZones.length} danger zones");
     } catch (e) {
-      print("Error loading danger zones: $e");
-      Fluttertoast.showToast(msg: "Error loading danger zones: $e");
+      print('Error fetching danger zones: $e');
     }
-  }
-
-  void _initializeLocationUpdates() {
-    _positionSubscription = Geolocator.getPositionStream(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.best,
-        distanceFilter: 10,
-      ),
-    ).listen(
-      (Position position) {
-        print("New position received: ${position.latitude}, ${position.longitude}");
-        LatLng currentLatLng = LatLng(position.latitude, position.longitude);
-        _updateCurrentLocationMarker(currentLatLng);
-        if (_mapController != null) {
-          _mapController!.animateCamera(
-            CameraUpdate.newLatLng(currentLatLng),
-          );
-        }
-      },
-      onError: (error) {
-        print("Error in location updates: $error");
-        Fluttertoast.showToast(msg: "Error in location updates: $error");
-      },
-    );
-  }
-
-  void _updateCurrentLocationMarker(LatLng position) {
-    setState(() {
-      if (_currentLocationMarker != null) {
-        _markers.remove(_currentLocationMarker);
-      }
-      _currentLocationMarker = Marker(
-        markerId: const MarkerId('current_location'),
-        position: position,
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-        infoWindow: InfoWindow(
-          title: 'Your Location',
-          snippet: 'Updated at ${DateTime.now().toString()}',
-        ),
-      );
-      _markers.add(_currentLocationMarker!);
-    });
-    print("Updated current location marker: ${position.latitude}, ${position.longitude}");
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          GoogleMap(
-            mapType: MapType.hybrid,
-            zoomControlsEnabled: true,
-            zoomGesturesEnabled: true,
-            myLocationButtonEnabled: true,
-            buildingsEnabled: true,
-            rotateGesturesEnabled: true,
-            onMapCreated: (GoogleMapController controller) {
-              _mapController = controller;
-
-              Geolocator.getCurrentPosition(
-                desiredAccuracy: LocationAccuracy.bestForNavigation,
-              ).then((position) {
-                print("Initial position: ${position.latitude}, ${position.longitude}");
-                LatLng currentLatLng = LatLng(position.latitude, position.longitude);
-                _mapController!.animateCamera(
-                  CameraUpdate.newLatLng(currentLatLng),
-                );
-                _updateCurrentLocationMarker(currentLatLng);
-              }).catchError((error) {
-                print("Error getting current position: $error");
-                Fluttertoast.showToast(msg: "Error getting current position: $error");
-              });
-            },
-            initialCameraPosition: CameraPosition(
-              target: _initialCameraPosition,
-              zoom: 18.5,
-            ),
-            markers: _markers,
-          ),
-          if (_isLoading)
-            const Center(
+      body: _currentPosition != null
+          ? GoogleMap(
+              onMapCreated: (controller) {
+                _mapController = controller;
+              },
+              initialCameraPosition: CameraPosition(
+                target: LatLng(
+                  _currentPosition!.latitude,
+                  _currentPosition!.longitude,
+                ),
+                zoom: 15,
+              ),
+              markers: {
+                Marker(
+                  markerId: const MarkerId('current_location'),
+                  position: LatLng(
+                    _currentPosition!.latitude,
+                    _currentPosition!.longitude,
+                  ),
+                  icon: BitmapDescriptor.defaultMarkerWithHue(
+                    BitmapDescriptor.hueBlue,
+                  ),
+                ),
+              },
+              circles: _dangerZoneCircles,
+            )
+          : const Center(
               child: CircularProgressIndicator(),
             ),
-        ],
-      ),
     );
   }
 }
