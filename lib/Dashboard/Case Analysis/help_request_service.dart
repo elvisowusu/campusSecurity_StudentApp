@@ -33,9 +33,9 @@ class HelpRequestService {
         'longitude': position.longitude,
         'lastUpdated': FieldValue.serverTimestamp(),
       });
-      print("Updated location for $_studentName: ${position.latitude}, ${position.longitude}");
+      Fluttertoast.showToast(msg:"Updated location for $_studentName: ${position.latitude}, ${position.longitude}");
     } catch (e) {
-      print("Failed to update location: $e");
+      Fluttertoast.showToast(msg:"Failed to update location: $e");
       Fluttertoast.showToast(msg: "Failed to update location: $e");
       rethrow;
     }
@@ -60,10 +60,10 @@ class HelpRequestService {
       });
 
       startLiveLocationUpdates(trackingId);
-      print("Help request sent for $_studentName. Tracking ID: $trackingId");
+      Fluttertoast.showToast(msg:"Help request sent for $_studentName. Tracking ID: $trackingId");
       Fluttertoast.showToast(msg: "Help request sent to the police app.");
     } catch (e) {
-      print("Failed to send help request: $e");
+      Fluttertoast.showToast(msg:"Failed to send help request: $e");
       Fluttertoast.showToast(msg: "Failed to send help request: $e");
       rethrow;
     }
@@ -76,19 +76,19 @@ class HelpRequestService {
         Position position = await _locationService.getCurrentPosition();
         await updateLiveLocation(trackingId, position);
       } catch (e) {
-        print("Error updating live location: $e");
+        Fluttertoast.showToast(msg:"Error updating live location: $e");
         Fluttertoast.showToast(msg: "Error updating live location: $e");
       }
     });
   }
 
-  Future<void> updateLiveLocation(String trackingId, Position position) async {
-    await _firestore.collection('help_requests').doc(trackingId).update({
-      'currentLocation': GeoPoint(position.latitude, position.longitude),
-      'lastUpdated': FieldValue.serverTimestamp(),
-    });
-    print("Updated live location for $_studentName: ${position.latitude}, ${position.longitude}");
-  }
+Future<void> updateLiveLocation(String trackingId, Position position) async {
+  await _firestore.collection('help_requests').doc(trackingId).update({
+    'currentLocation': GeoPoint(position.latitude, position.longitude),
+    'lastUpdated': FieldValue.serverTimestamp(),
+  });
+  Fluttertoast.showToast(msg:"Updated live location for $_studentName: ${position.latitude}, ${position.longitude}");
+}
 
   Stream<String> getHelpRequestStatus() {
     if (_currentTrackingId == null) {
@@ -111,7 +111,7 @@ class HelpRequestService {
     });
     _locationUpdateTimer?.cancel();
     _currentTrackingId = null;
-    print("Help request ended for $_studentName");
+    Fluttertoast.showToast(msg:"Help request ended for $_studentName");
   }
 
   Future<void> _ensureInitialized() async {
