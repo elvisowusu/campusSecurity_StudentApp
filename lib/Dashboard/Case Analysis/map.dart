@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'danger_zone.dart';
@@ -17,12 +20,21 @@ class _MapPageState extends State<MapPage> {
   GoogleMapController? _mapController;
   Position? _currentPosition;
   Set<Circle> _dangerZoneCircles = {};
+  StreamSubscription<Position>? _positionStreamSubscription;
+  DateTime? _lastToastTime;
 
   @override
   void initState() {
     super.initState();
     _getCurrentLocation();
     _loadDangerZones();
+    _startListeningToLocationUpdates();
+  }
+
+  @override
+  void dispose() {
+    _positionStreamSubscription?.cancel();
+    super.dispose();
   }
 
   Future<void> _getCurrentLocation() async {
@@ -30,16 +42,74 @@ class _MapPageState extends State<MapPage> {
       _currentPosition = await _locationService.getCurrentPosition();
       setState(() {});
 
-      // Move the camera to the current location
-      _mapController?.animateCamera(CameraUpdate.newLatLng(
-        LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-      ));
+      _updateCameraPosition();
     } catch (e) {
       print('Error getting current location: $e');
     }
   }
 
-  Future<void> _loadDangerZones() async {
+bool _isInDangerZone(Position position) {
+  for (Circle dangerZone in _dangerZoneCircles) {
+    double distanceInMeters = Geolocator.distanceBetween(
+      position.latitude,
+      position.longitude,
+      dangerZone.center.latitude,
+      dangerZone.center.longitude,
+    );
+    if (distanceInMeters <= dangerZone.radius) {
+      return true;
+    }
+  }
+  return false;
+}
+ void _startListeningToLocationUpdates() {
+    const locationSettings = LocationSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 10,
+    );
+
+    _positionStreamSubscription = Geolocator.getPositionStream(locationSettings: locationSettings)
+        .listen((Position position) {
+      setState(() {
+        _currentPosition = position;
+      });
+      _updateCameraPosition();
+      
+      // Check if user is in a danger zone
+      if (_isInDangerZone(position)) {
+        _showDangerZoneToast();
+      }
+    });
+  }
+
+  void _showDangerZoneToast() {
+    final now = DateTime.now();
+    if (_lastToastTime == null || now.difference(_lastToastTime!) > Duration(minutes: 1)) {
+      Fluttertoast.showToast(
+        msg: "Warning: You are in a danger zone!",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.CENTER,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0
+      );
+      _lastToastTime = now;
+    }
+  }
+  void _updateCameraPosition() {
+    if (_currentPosition != null && _mapController != null) {
+      _mapController!.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+            zoom: 15,
+          ),
+        ),
+      );
+    }
+  }
+
+    Future<void> _loadDangerZones() async {
     try {
       List<DangerZone> dangerZones = await _dangerZoneService.getDangerZones();
       setState(() {
@@ -59,6 +129,7 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -74,18 +145,8 @@ class _MapPageState extends State<MapPage> {
                 ),
                 zoom: 15,
               ),
-              markers: {
-                Marker(
-                  markerId: const MarkerId('current_location'),
-                  position: LatLng(
-                    _currentPosition!.latitude,
-                    _currentPosition!.longitude,
-                  ),
-                  icon: BitmapDescriptor.defaultMarkerWithHue(
-                    BitmapDescriptor.hueBlue,
-                  ),
-                ),
-              },
+              myLocationEnabled: true,
+              myLocationButtonEnabled: true,
               circles: _dangerZoneCircles,
             )
           : const Center(

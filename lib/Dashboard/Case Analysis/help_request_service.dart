@@ -1,10 +1,8 @@
 import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:student_app/Dashboard/Case%20Analysis/location_services.dart';
-
 import '../../services/user_session.dart';
 
 class HelpRequestService {
@@ -13,7 +11,7 @@ class HelpRequestService {
   String? _studentUid;
   String? _studentName;
   String? _referenceNumber;
-  Timer? _locationUpdateTimer;
+  StreamSubscription<Position>? _positionStreamSubscription;
   String? _currentTrackingId;
 
   Future<void> initialize() async {
@@ -22,23 +20,6 @@ class HelpRequestService {
     _studentUid = userSession.studentId;
     _studentName = userSession.studentName;
     _referenceNumber = userSession.referenceNumber;
-  }
-
-  Future<void> updateLocation() async {
-    await _ensureInitialized();
-    try {
-      Position position = await _locationService.getCurrentPosition();
-      await _firestore.collection('students').doc(_studentUid!).update({
-        'latitude': position.latitude,
-        'longitude': position.longitude,
-        'lastUpdated': FieldValue.serverTimestamp(),
-      });
-      Fluttertoast.showToast(msg:"Updated location for $_studentName: ${position.latitude}, ${position.longitude}");
-    } catch (e) {
-      Fluttertoast.showToast(msg:"Failed to update location: $e");
-      Fluttertoast.showToast(msg: "Failed to update location: $e");
-      rethrow;
-    }
   }
 
   Future<void> sendHelpRequest() async {
@@ -60,35 +41,37 @@ class HelpRequestService {
       });
 
       startLiveLocationUpdates(trackingId);
-      Fluttertoast.showToast(msg:"Help request sent for $_studentName. Tracking ID: $trackingId");
-      Fluttertoast.showToast(msg: "Help request sent to the police app.");
+      Fluttertoast.showToast(msg: "Help request sent for $_studentName. Tracking ID: $trackingId");
     } catch (e) {
-      Fluttertoast.showToast(msg:"Failed to send help request: $e");
       Fluttertoast.showToast(msg: "Failed to send help request: $e");
       rethrow;
     }
   }
 
   void startLiveLocationUpdates(String trackingId) {
-    _locationUpdateTimer?.cancel();
-    _locationUpdateTimer = Timer.periodic(const Duration(seconds: 10), (timer) async {
+    _positionStreamSubscription?.cancel();
+    _positionStreamSubscription = Geolocator.getPositionStream(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 10,
+      ),
+    ).listen((Position position) async {
       try {
-        Position position = await _locationService.getCurrentPosition();
         await updateLiveLocation(trackingId, position);
       } catch (e) {
-        Fluttertoast.showToast(msg:"Error updating live location: $e");
         Fluttertoast.showToast(msg: "Error updating live location: $e");
+        // Implement retry logic here if needed
       }
     });
   }
 
-Future<void> updateLiveLocation(String trackingId, Position position) async {
-  await _firestore.collection('help_requests').doc(trackingId).update({
-    'currentLocation': GeoPoint(position.latitude, position.longitude),
-    'lastUpdated': FieldValue.serverTimestamp(),
-  });
-  Fluttertoast.showToast(msg:"Updated live location for $_studentName: ${position.latitude}, ${position.longitude}");
-}
+  Future<void> updateLiveLocation(String trackingId, Position position) async {
+    await _firestore.collection('help_requests').doc(trackingId).update({
+      'currentLocation': GeoPoint(position.latitude, position.longitude),
+      'lastUpdated': FieldValue.serverTimestamp(),
+    });
+    Fluttertoast.showToast(msg: "Updated live location for $_studentName: ${position.latitude}, ${position.longitude}");
+  }
 
   Stream<String> getHelpRequestStatus() {
     if (_currentTrackingId == null) {
@@ -109,9 +92,9 @@ Future<void> updateLiveLocation(String trackingId, Position position) async {
       'status': 'resolved',
       'resolvedAt': FieldValue.serverTimestamp(),
     });
-    _locationUpdateTimer?.cancel();
+    _positionStreamSubscription?.cancel();
     _currentTrackingId = null;
-    Fluttertoast.showToast(msg:"Help request ended for $_studentName");
+    Fluttertoast.showToast(msg: "Help request ended for $_studentName");
   }
 
   Future<void> _ensureInitialized() async {
