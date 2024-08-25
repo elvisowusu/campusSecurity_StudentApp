@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:student_app/firebase_options.dart';
 import 'package:student_app/screens/home_screen.dart';
 import 'package:student_app/screens/splash_screen.dart';
@@ -12,6 +13,7 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+   await FirebaseMessaging.instance.requestPermission();
   runApp(const MyApp());
 }
 

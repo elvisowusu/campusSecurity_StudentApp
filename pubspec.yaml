@@ -59,6 +59,9 @@ dependencies:
   pinput: ^5.0.0
   get: ^4.6.6
   keyboard_dismisser: ^3.0.0
+  googleapis_auth: ^1.6.0
+  googleapis: ^13.2.0
+  http: ^1.2.2
 
 
   

@@ -65,7 +65,7 @@ bool _isInDangerZone(Position position) {
  void _startListeningToLocationUpdates() {
     const locationSettings = LocationSettings(
       accuracy: LocationAccuracy.high,
-      distanceFilter: 10,
+      distanceFilter: 5,
     );
 
     _positionStreamSubscription = Geolocator.getPositionStream(locationSettings: locationSettings)
@@ -84,7 +84,7 @@ bool _isInDangerZone(Position position) {
 
   void _showDangerZoneToast() {
     final now = DateTime.now();
-    if (_lastToastTime == null || now.difference(_lastToastTime!) > Duration(minutes: 1)) {
+    if (_lastToastTime == null || now.difference(_lastToastTime!) > const Duration(minutes: 1)) {
       Fluttertoast.showToast(
         msg: "Warning: You are in a danger zone!",
         toastLength: Toast.LENGTH_LONG,
@@ -135,6 +135,7 @@ bool _isInDangerZone(Position position) {
     return Scaffold(
       body: _currentPosition != null
           ? GoogleMap(
+              mapType: MapType.normal,
               onMapCreated: (controller) {
                 _mapController = controller;
               },

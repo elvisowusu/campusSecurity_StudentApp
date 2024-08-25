@@ -5,7 +5,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:student_app/Dashboard/Case%20Analysis/help_request_service.dart';
 import 'package:student_app/widgets/signout.dart';
-
 import '../Case Analysis/danger_zone.dart';
 import '../Case Analysis/location_services.dart';
 
@@ -50,6 +49,8 @@ final DangerZoneService _dangerZoneService = DangerZoneService();
   @override
   void dispose() {
     _statusSubscription?.cancel();
+    _reconnectionTimer?.cancel();
+    _positionStreamSubscription?.cancel();
     super.dispose();
   }
 
