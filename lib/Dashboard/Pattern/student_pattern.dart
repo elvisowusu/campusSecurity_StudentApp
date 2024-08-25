@@ -49,8 +49,6 @@ final DangerZoneService _dangerZoneService = DangerZoneService();
   @override
   void dispose() {
     _statusSubscription?.cancel();
-    _reconnectionTimer?.cancel();
-    _positionStreamSubscription?.cancel();
     super.dispose();
   }
 
