@@ -23,10 +23,9 @@ class DangerZoneService {
         'timestamp': FieldValue.serverTimestamp(),
       });
 
-      print("Location added as danger zone: ${position.latitude}, ${position.longitude} with radius $radius");
+      Fluttertoast.showToast(msg:"Location added as danger zone: ${position.latitude}, ${position.longitude} with radius $radius");
       Fluttertoast.showToast(msg: "Location added to Firestore as a danger zone.");
     } catch (e) {
-      print("Failed to add location to Firestore: $e");
       Fluttertoast.showToast(msg: "Failed to add location to Firestore: $e");
       rethrow;
     }
@@ -43,10 +42,10 @@ class DangerZoneService {
           radius: doc['radius'],
         );
       }).toList();
-      print("Fetched ${dangerZones.length} danger zones");
+      Fluttertoast.showToast(msg:"Fetched ${dangerZones.length} danger zones");
       return dangerZones;
     } catch (e) {
-      print("Failed to fetch danger zones: $e");
+      Fluttertoast.showToast(msg:"Failed to fetch danger zones: $e");
       Fluttertoast.showToast(msg: "Failed to fetch danger zones: $e");
       return [];
     }

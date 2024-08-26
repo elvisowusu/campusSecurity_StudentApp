@@ -44,7 +44,7 @@ class _MapPageState extends State<MapPage> {
 
       _updateCameraPosition();
     } catch (e) {
-      print('Error getting current location: $e');
+      Fluttertoast.showToast(msg:'Error getting current location: $e');
     }
   }
 
@@ -125,7 +125,7 @@ bool _isInDangerZone(Position position) {
             .toSet();
       });
     } catch (e) {
-      print('Error fetching danger zones: $e');
+      Fluttertoast.showToast(msg:'Error fetching danger zones: $e');
     }
   }
 
