@@ -47,7 +47,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   String? _referenceNumberError;
 
   // Flag for password visibility
-  bool _showPassword = true;
+  bool _showPassword = false;
 
   @override
   void initState() {
@@ -288,8 +288,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           suffixIcon: IconButton(
                             icon: Icon(
                               _showPassword
-                                  ? Icons.visibility
-                                  : Icons.visibility_off,
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
                               color: lightColorScheme.primary,
                             ),
                             onPressed: () {

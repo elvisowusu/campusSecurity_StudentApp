@@ -35,7 +35,7 @@ class _SignInScreenState extends State<SignInScreen> {
   String? _emailError;
   String? _passwordError;
 
-  bool _showPassword = true;
+  bool _showPassword = false;
 
   @override
   void initState() {
@@ -173,8 +173,8 @@ class _SignInScreenState extends State<SignInScreen> {
                               suffixIcon: IconButton(
                                 icon: Icon(
                                   _showPassword
-                                      ? Icons.visibility
-                                      : Icons.visibility_off,
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
                                   color: lightColorScheme.primary,
                                 ),
                                 onPressed: () {
