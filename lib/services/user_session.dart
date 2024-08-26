@@ -27,7 +27,7 @@ class UserSession {
   }
   
   Future<Map<String, String>> getSessionDetails() async {
-    await loadSession(); // Ensure session data is loaded
+    await loadSession(); 
     return {
       'referenceNumber': _referenceNumber ?? '',
       'fullName': _studentName ?? '',

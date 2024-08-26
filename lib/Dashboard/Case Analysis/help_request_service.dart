@@ -1,11 +1,9 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:student_app/Dashboard/Case%20Analysis/location_services.dart';
-import '../../services/notification_services.dart';
 import '../../services/user_session.dart';
 
 class HelpRequestService {
@@ -47,27 +45,9 @@ class HelpRequestService {
 
     startLiveLocationUpdates(trackingId);
     Fluttertoast.showToast(msg: "Help request sent for $_studentName. Tracking ID: $trackingId");
-
-        // Send FCM notification to all police officers
-    await sendNotificationToAllPoliceOfficers(trackingId, _studentName!);
-  } on FirebaseException catch (e) {
-  // Handle Firestore-specific errors
-  Fluttertoast.showToast(msg: "Failed to send request: ${e.message}");
-} on SocketException catch (_) {
-  // Handle network errors
-  Fluttertoast.showToast(msg: "Network error. Please check your connection.");
 } catch (e) {
   Fluttertoast.showToast(msg: "An unknown error occurred.");
 }
-}
-Future<void> sendNotificationToAllPoliceOfficers(String trackingId, String studentName) async {
-  QuerySnapshot policeOfficers = await _firestore.collection('police_officers').get();
-  for (var doc in policeOfficers.docs) {
-    String? token = doc.get('fcmToken');
-    if (token != null) {
-      await PushNotificationService.sendNotificationToSelectedPolice(token, trackingId, studentName);
-    }
-  }
 }
 
     // Update the read status when the notification is opened

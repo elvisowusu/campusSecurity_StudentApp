@@ -70,7 +70,7 @@ Future<void> _sendHelpRequest() async {
           _isLoading = false;
           _helpRequested = false;
         });
-        print('Help request resolved');
+        Fluttertoast.showToast(msg:'Help request resolved');
       }
     });
     Position position = await _locationService.getCurrentPosition();
@@ -86,7 +86,7 @@ Future<void> _sendHelpRequest() async {
     });
   } catch (e) {
     // Handle any errors that occurred during the help request
-    print('Error sending help request: $e');
+    Fluttertoast.showToast(msg:'Error sending help request: $e');
     setState(() {
       _isLoading = false;
     });
