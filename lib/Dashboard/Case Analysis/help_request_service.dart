@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:student_app/Dashboard/Case%20Analysis/location_services.dart';
+import '../../services/notification_services.dart';
 import '../../services/user_session.dart';
 
 class HelpRequestService {
@@ -24,34 +26,36 @@ class HelpRequestService {
     _referenceNumber = userSession.referenceNumber;
   }
 
- Future<void> sendHelpRequest() async {
-  await _ensureInitialized();
-  try {
-    Position position = await _locationService.getCurrentPosition();
-    String trackingId = DateTime.now().millisecondsSinceEpoch.toString();
-    _currentTrackingId = trackingId;
+  Future<void> sendHelpRequest() async {
+    await _ensureInitialized();
+    try {
+      Position position = await _locationService.getCurrentPosition();
+      String trackingId = DateTime.now().millisecondsSinceEpoch.toString();
+      _currentTrackingId = trackingId;
 
-    await _firestore.collection('help_requests').doc(trackingId).set({
-      'studentUid': _studentUid!,
-      'studentName': _studentName!,
-      'referenceNumber': _referenceNumber!,
-      'initialLocation': GeoPoint(position.latitude, position.longitude),
-      'currentLocation': GeoPoint(position.latitude, position.longitude),
-      'timestamp': FieldValue.serverTimestamp(),
-      'trackingId': trackingId,
-      'status': 'active',
-      'isRead': false,
-    });
+      await _firestore.collection('help_requests').doc(trackingId).set({
+        'studentUid': _studentUid!,
+        'studentName': _studentName!,
+        'referenceNumber': _referenceNumber!,
+        'initialLocation': GeoPoint(position.latitude, position.longitude),
+        'currentLocation': GeoPoint(position.latitude, position.longitude),
+        'timestamp': FieldValue.serverTimestamp(),
+        'trackingId': trackingId,
+        'status': 'active',
+        'isRead': false,
+      });
 
-    startLiveLocationUpdates(trackingId);
-    Fluttertoast.showToast(msg: "Help request sent for $_studentName. Tracking ID: $trackingId");
-} catch (e) {
-  Fluttertoast.showToast(msg: "An unknown error occurred.");
-}
-}
+      startLiveLocationUpdates(trackingId);
+      Fluttertoast.showToast(
+          msg: "Help request sent for $_studentName. Tracking ID: $trackingId");
+    } catch (e) {
+      Fluttertoast.showToast(msg: "An unknown error occurred.");
+    }
+  }
 
-    // Update the read status when the notification is opened
-  Future<void> updateHelpRequestReadStatus(String trackingId, bool isRead) async {
+  // Update the read status when the notification is opened
+  Future<void> updateHelpRequestReadStatus(
+      String trackingId, bool isRead) async {
     await _firestore.collection('help_requests').doc(trackingId).update({
       'isRead': isRead,
     });
@@ -103,24 +107,29 @@ class HelpRequestService {
         .snapshots()
         .map((snapshot) => HelpRequestData.fromSnapshot(snapshot));
   }
+
   Stream<String> getHelpRequestStatus() {
-  if (_currentTrackingId == null) {
-    throw Exception('No active help request');
+    if (_currentTrackingId == null) {
+      throw Exception('No active help request');
+    }
+    return _firestore
+        .collection('help_requests')
+        .doc(_currentTrackingId)
+        .snapshots()
+        .map((snapshot) {
+      final data = snapshot.data() as Map<String, dynamic>;
+      return data['status'] as String;
+    });
   }
-  return _firestore
-      .collection('help_requests')
-      .doc(_currentTrackingId)
-      .snapshots()
-      .map((snapshot) {
-        final data = snapshot.data() as Map<String, dynamic>;
-        return data['status'] as String;
-      });
-}
+
   Future<void> endHelpRequest() async {
     if (_currentTrackingId == null) {
       throw Exception('No active help request');
     }
-    await _firestore.collection('help_requests').doc(_currentTrackingId).update({
+    await _firestore
+        .collection('help_requests')
+        .doc(_currentTrackingId)
+        .update({
       'status': 'resolved',
       'resolvedAt': FieldValue.serverTimestamp(),
     });
@@ -135,7 +144,6 @@ class HelpRequestService {
       await initialize();
     }
   }
-  
 }
 
 class HelpRequestData {
@@ -158,7 +166,8 @@ class HelpRequestData {
 
     return HelpRequestData(
       status: data['status'] as String,
-      studentLocation: LatLng(studentGeoPoint.latitude, studentGeoPoint.longitude),
+      studentLocation:
+          LatLng(studentGeoPoint.latitude, studentGeoPoint.longitude),
       policeLocation: policeGeoPoint != null
           ? LatLng(policeGeoPoint.latitude, policeGeoPoint.longitude)
           : null,
