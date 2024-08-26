@@ -1,8 +1,10 @@
 import 'package:get/get.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:your_app/pages/map_area.dart'; // replace with the actual import for your MapArea page
+import 'package:student_app/Dashboard/Case%20Analysis/map.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 class NotificationService {
+  // creating instance for firebaseMessaging to allow fcm
   //creating an instance for the FlutterLocalNotification plugin
   static final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
@@ -14,7 +16,7 @@ class NotificationService {
     if (notificationResponse.notificationResponseType ==
         NotificationResponseType.selectedNotification) {
       // Navigate to MapArea
-      Get.to(() => MapArea()); // Navigating to MapArea page
+      Get.to(() => const MapPage());
     }
   }
 
