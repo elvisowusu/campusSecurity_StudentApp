@@ -1,5 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:student_app/firebase_options.dart';
 import 'package:student_app/screens/home_screen.dart';
 import 'package:student_app/screens/splash_screen.dart';

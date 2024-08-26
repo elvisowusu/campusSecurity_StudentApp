@@ -22,7 +22,7 @@ class _MapPageState extends State<MapPage> {
   Position? _currentPosition;
   Set<Circle> _dangerZoneCircles = {};
   StreamSubscription<Position>? _positionStreamSubscription;
-  DateTime? _lastToastTime;
+  DateTime? _lastDangerAlertTime;
 
   @override
   void initState() {
@@ -80,7 +80,7 @@ class _MapPageState extends State<MapPage> {
 
       // Check if user is in a danger zone
       if (_isInDangerZone(position)) {
-        _showDangerZoneToast();
+        
         _showNotification();
       }
     });
@@ -88,28 +88,14 @@ class _MapPageState extends State<MapPage> {
 
   void _showNotification() {
     final now = DateTime.now();
-    if (_lastToastTime == null ||
-        now.difference(_lastToastTime!) > const Duration(minutes: 1)) {
+    if (_lastDangerAlertTime == null ||
+        now.difference(_lastDangerAlertTime!) > const Duration(minutes: 1)) {
       NotificationService.showInstantNotification(
-          'Waring', "You are in a danger zone");
-      _lastToastTime = now;
+          'Warning', "You are in a danger zone");
+      _lastDangerAlertTime = now;
     }
   }
 
-  void _showDangerZoneToast() {
-    final now = DateTime.now();
-    if (_lastToastTime == null ||
-        now.difference(_lastToastTime!) > const Duration(minutes: 1)) {
-      Fluttertoast.showToast(
-          msg: "Warning: You are in a danger zone!",
-          toastLength: Toast.LENGTH_LONG,
-          gravity: ToastGravity.CENTER,
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
-          fontSize: 16.0);
-      _lastToastTime = now;
-    }
-  }
 
   void _updateCameraPosition() {
     if (_currentPosition != null && _mapController != null) {
@@ -152,7 +138,7 @@ class _MapPageState extends State<MapPage> {
     return Scaffold(
       body: _currentPosition != null
           ? GoogleMap(
-              mapType: MapType.satellite,
+              mapType: MapType.hybrid,
               onMapCreated: (controller) {
                 _mapController = controller;
               },

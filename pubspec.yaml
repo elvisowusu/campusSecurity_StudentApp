@@ -54,7 +54,7 @@ dependencies:
   flutter_svg: ^2.0.10+1
   geolocator: ^12.0.0
   geofence_service: ^6.0.0
-  flutter_local_notifications: ^17.2.1+2
+  flutter_local_notifications: ^17.2.2
   firebase_messaging: ^15.0.4
   pinput: ^5.0.0
   get: ^4.6.6
@@ -63,6 +63,7 @@ dependencies:
   googleapis: ^13.2.0
   http: ^1.2.2
   timezone: ^0.9.4
+  flutter_background_service: ^5.0.9
 
 
   

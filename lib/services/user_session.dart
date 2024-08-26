@@ -20,8 +20,8 @@ class UserSession {
     _assignedCounselorId = prefs.getString('assignedCounselorId');
     _counselorName = prefs.getString('counselorName');
 
-    // If we have an assigned counselor ID but no name, fetch it from Firebase
-    if (_assignedCounselorId != null && _counselorName == null) {
+    // If we have an assigned counselor ID but no valid counselor name, fetch it from Firebase
+    if (_assignedCounselorId != null && (_counselorName == null || _counselorName!.isEmpty)) {
       await _fetchCounselorName();
     }
   }
@@ -34,13 +34,16 @@ class UserSession {
     _studentName = studentName;
     _assignedCounselorId = assignedCounselorId;
 
+    // Save student info to SharedPreferences
     await prefs.setString('studentId', studentId);
     await prefs.setString('referenceNumber', referenceNumber);
     await prefs.setString('studentName', studentName);
     await prefs.setString('assignedCounselorId', assignedCounselorId);
 
-    // Fetch and save counselor name
-    await _fetchCounselorName();
+    // Fetch and save counselor name only if not already saved
+    if (_counselorName == null || _counselorName!.isEmpty) {
+      await _fetchCounselorName();
+    }
   }
 
   Future<void> _fetchCounselorName() async {
@@ -51,11 +54,20 @@ class UserSession {
             .doc(_assignedCounselorId)
             .get();
 
-        if (counselorDoc.exists) {
-          _counselorName = counselorDoc['fullname'];
-          // Save counselor name to SharedPreferences
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('counselorName', _counselorName!);
+        if (counselorDoc.exists && counselorDoc.data() != null) {
+          // Safely extract 'fullname' from Firestore document
+          final data = counselorDoc.data() as Map<String, dynamic>;
+          _counselorName = data['fullname'] ?? '';
+
+          // Save counselor name if valid
+          if (_counselorName != null && _counselorName!.isNotEmpty) {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('counselorName', _counselorName!);
+          } else {
+            print('Counselor name is invalid or missing.');
+          }
+        } else {
+          print('Counselor document does not exist.');
         }
       } catch (e) {
         print('Error fetching counselor name: $e');
@@ -79,6 +91,7 @@ class UserSession {
     _studentName = null;
     _assignedCounselorId = null;
     _counselorName = null;
+
     await prefs.remove('studentId');
     await prefs.remove('referenceNumber');
     await prefs.remove('studentName');
