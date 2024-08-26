@@ -368,7 +368,7 @@ class _SignInScreenState extends State<SignInScreen> {
       Map<String, String> details = await _fetchStudentDetails(user.uid);
 
       if (details['referenceNumber']!.isNotEmpty) {
-        await UserSession().saveSession(user.uid, details['referenceNumber']!, details['fullName']!);
+        await UserSession().saveSession(user.uid, details['referenceNumber']!, details['fullName']!,user.uid);
 
         Navigator.push(
           context,
@@ -413,7 +413,8 @@ Future<Map<String, String>> _fetchStudentDetails(String userId) async {
       final data = snapshot.data() as Map<String, dynamic>;
       String referenceNumber = data['Reference number'] ?? '';
       String fullName = data['fullName'] ?? '';
-      await UserSession().saveSession(userId, referenceNumber, fullName); // Update session
+      String assignedCounselorId = data['assgnedCounselorId']??'';
+      await UserSession().saveSession(userId, referenceNumber, fullName, assignedCounselorId); // Update session
       return {
         'referenceNumber': referenceNumber,
         'fullName': fullName,
@@ -450,7 +451,7 @@ Future<Map<String, String>> _fetchStudentDetails(String userId) async {
     Map<String, String> details = await _fetchStudentDetails(user.uid);
 
     if (details['referenceNumber']!.isNotEmpty) {
-      await UserSession().saveSession(user.uid, details['referenceNumber']!, details['fullName']!);
+      await UserSession().saveSession(user.uid, details['referenceNumber']!, details['fullName']!,user.uid);
 
       Navigator.push(
         context,

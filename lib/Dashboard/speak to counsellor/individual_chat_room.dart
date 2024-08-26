@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:student_app/common/enum/message_type.dart';
 import 'package:keyboard_dismisser/keyboard_dismisser.dart';
+import '../../services/user_session.dart';
 
 class IndividualChatPage extends StatefulWidget {
   final String contactId;
@@ -25,10 +26,16 @@ class _IndividualChatPageState extends State<IndividualChatPage>
   final Map<String, AnimationController> _animationControllers = {};
   String? _replyingToMessage;
   String? _selectedMessageId;
+  String? _counselorName;
+
 
   @override
   void initState() {
     super.initState();
+    _initializeChat();
+  }
+
+    Future<void> _initializeChat() async {
     _currentUser = _auth.currentUser;
     _messagesCollection = _firestore
         .collection('counselors')
@@ -36,6 +43,14 @@ class _IndividualChatPageState extends State<IndividualChatPage>
         .collection('chats')
         .doc(_currentUser!.uid)
         .collection('messages');
+    
+    // Initialize UserSession and get counselor name
+    final userSession = UserSession();
+    await userSession.loadSession();
+    setState(() {
+      _counselorName = userSession.counselorName;
+    });
+
     _markMessagesAsRead();
   }
 
@@ -149,7 +164,7 @@ class _IndividualChatPageState extends State<IndividualChatPage>
     return '${hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')} $period';
   }
 
-    // Copy message to clipboard
+  // Copy message to clipboard
   void copyMessage(String content, BuildContext context) {
     Clipboard.setData(ClipboardData(text: content));
     ScaffoldMessenger.of(context).showSnackBar(
@@ -158,8 +173,8 @@ class _IndividualChatPageState extends State<IndividualChatPage>
   }
 
   // Delete a message
-  Future<void> deleteMessage(
-      String messageId, CollectionReference messagesCollection, VoidCallback onSuccess) async {
+  Future<void> deleteMessage(String messageId,
+      CollectionReference messagesCollection, VoidCallback onSuccess) async {
     await messagesCollection.doc(messageId).delete();
     onSuccess();
   }
@@ -381,7 +396,7 @@ class _IndividualChatPageState extends State<IndividualChatPage>
       child: Scaffold(
           appBar: AppBar(
             title: _selectedMessageId == null
-                ? const Text('Chat with Counselor')
+                ? Text('$_counselorName')
                 : buildAppBarActions(_selectedMessageId, context, setState),
           ),
           body: Container(

@@ -22,7 +22,7 @@ class ChatService {
       return;
     }
     final String userUid = currentUser!.uid;
-    await UserSession().saveSession(userUid, '', ''); // Update with default values or adjust as needed
+    await UserSession().saveSession(userUid, '', '',''); // Update with default values or adjust as needed
   }
 
   Future<String?> getUserIdFromSession() async {

@@ -13,7 +13,7 @@ class DangerZoneService {
     _studentUid = userSession.studentId;
   }
 
-  Future<void> storeLocationAsDangerZone(Position position, [double radius = 30.0]) async {
+  Future<void> storeLocationAsDangerZone(Position position, [double radius = 35.0]) async {
     await _ensureInitialized();
     try {
       await _firestore.collection('danger_zones').add({

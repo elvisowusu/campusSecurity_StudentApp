@@ -19,18 +19,18 @@ class SignUpScreen extends StatefulWidget {
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
 }
-
+     
 class _SignUpScreenState extends State<SignUpScreen> {
   final _signUpFormKey = GlobalKey<FormState>();
   bool agreePersonalData = true;
   // Loader
-  bool _isSigningUp = false;
+  bool _isSigningUp =  false;
   bool _isSigningUpWithGoogle = false;
 
-  final FirebaseAuthService _auth = FirebaseAuthService();
-
+    final FirebaseAuthService _auth = FirebaseAuthService();
+ 
   final TextEditingController _fullNameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
+final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _referenceNumberController =
       TextEditingController();
@@ -509,6 +509,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           user.uid,
           referenceNumber.trim(),
           fullName.trim(),
+          defaultCounsellorId.trim()
         );
 
         Fluttertoast.showToast(msg: "Sign up successful");
@@ -633,6 +634,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           user.uid,
           _referenceNumberController.text.trim(),
           user.displayName ?? '',
+          defaultCounsellorId.trim()
         );
 
         Fluttertoast.showToast(msg: "Sign up successful");

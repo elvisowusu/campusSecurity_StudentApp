@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:student_app/services/local_notification_services.dart';
 import 'danger_zone.dart';
 import 'location_services.dart';
 
@@ -44,64 +45,79 @@ class _MapPageState extends State<MapPage> {
 
       _updateCameraPosition();
     } catch (e) {
-      Fluttertoast.showToast(msg:'Error getting current location: $e');
+      Fluttertoast.showToast(msg: 'Error getting current location: $e');
     }
   }
 
-bool _isInDangerZone(Position position) {
-  for (Circle dangerZone in _dangerZoneCircles) {
-    double distanceInMeters = Geolocator.distanceBetween(
-      position.latitude,
-      position.longitude,
-      dangerZone.center.latitude,
-      dangerZone.center.longitude,
-    );
-    if (distanceInMeters <= dangerZone.radius) {
-      return true;
+  bool _isInDangerZone(Position position) {
+    for (Circle dangerZone in _dangerZoneCircles) {
+      double distanceInMeters = Geolocator.distanceBetween(
+        position.latitude,
+        position.longitude,
+        dangerZone.center.latitude,
+        dangerZone.center.longitude,
+      );
+      if (distanceInMeters <= dangerZone.radius) {
+        return true;
+      }
     }
+    return false;
   }
-  return false;
-}
- void _startListeningToLocationUpdates() {
+
+  void _startListeningToLocationUpdates() {
     const locationSettings = LocationSettings(
       accuracy: LocationAccuracy.high,
       distanceFilter: 5,
     );
 
-    _positionStreamSubscription = Geolocator.getPositionStream(locationSettings: locationSettings)
-        .listen((Position position) {
+    _positionStreamSubscription =
+        Geolocator.getPositionStream(locationSettings: locationSettings)
+            .listen((Position position) {
       setState(() {
         _currentPosition = position;
       });
       _updateCameraPosition();
-      
+
       // Check if user is in a danger zone
       if (_isInDangerZone(position)) {
         _showDangerZoneToast();
+        _showNotification();
       }
     });
   }
 
-  void _showDangerZoneToast() {
+  void _showNotification() {
     final now = DateTime.now();
-    if (_lastToastTime == null || now.difference(_lastToastTime!) > const Duration(minutes: 1)) {
-      Fluttertoast.showToast(
-        msg: "Warning: You are in a danger zone!",
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.CENTER,
-        backgroundColor: Colors.red,
-        textColor: Colors.white,
-        fontSize: 16.0
-      );
+    if (_lastToastTime == null ||
+        now.difference(_lastToastTime!) > const Duration(minutes: 1)) {
+      NotificationService.showInstantNotification(
+          'Waring', "You are in a danger zone");
       _lastToastTime = now;
     }
   }
+
+  void _showDangerZoneToast() {
+    final now = DateTime.now();
+    if (_lastToastTime == null ||
+        now.difference(_lastToastTime!) > const Duration(minutes: 1)) {
+      Fluttertoast.showToast(
+          msg: "Warning: You are in a danger zone!",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.CENTER,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+      _lastToastTime = now;
+    }
+  }
+
   void _updateCameraPosition() {
     if (_currentPosition != null && _mapController != null) {
       _mapController!.animateCamera(
         CameraUpdate.newCameraPosition(
           CameraPosition(
-            target: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+            target:
+                LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
             zoom: 15,
           ),
         ),
@@ -109,33 +125,34 @@ bool _isInDangerZone(Position position) {
     }
   }
 
-    Future<void> _loadDangerZones() async {
+  Future<void> _loadDangerZones() async {
     try {
       List<DangerZone> dangerZones = await _dangerZoneService.getDangerZones();
       setState(() {
         _dangerZoneCircles = dangerZones
             .map((zone) => Circle(
-                  circleId: CircleId('danger_zone_${zone.latitude}_${zone.longitude}'),
+                  circleId: CircleId(
+                      'danger_zone_${zone.latitude}_${zone.longitude}'),
                   center: LatLng(zone.latitude, zone.longitude),
                   radius: zone.radius,
-                  fillColor: const Color.fromARGB(255, 204, 108, 101).withOpacity(0.3),
+                  fillColor:
+                      const Color.fromARGB(255, 204, 108, 101).withOpacity(0.3),
                   strokeColor: const Color.fromARGB(255, 240, 170, 165),
                   strokeWidth: 1,
                 ))
             .toSet();
       });
     } catch (e) {
-      Fluttertoast.showToast(msg:'Error fetching danger zones: $e');
+      Fluttertoast.showToast(msg: 'Error fetching danger zones: $e');
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: _currentPosition != null
           ? GoogleMap(
-              mapType: MapType.normal,
+              mapType: MapType.satellite,
               onMapCreated: (controller) {
                 _mapController = controller;
               },
@@ -144,7 +161,7 @@ bool _isInDangerZone(Position position) {
                   _currentPosition!.latitude,
                   _currentPosition!.longitude,
                 ),
-                zoom: 15,
+                zoom: 17,
               ),
               myLocationEnabled: true,
               myLocationButtonEnabled: true,
