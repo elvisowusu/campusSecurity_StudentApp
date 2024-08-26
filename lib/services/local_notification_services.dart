@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get/get.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:student_app/Dashboard/Case%20Analysis/map.dart';
@@ -5,9 +6,27 @@ import 'package:timezone/timezone.dart' as tz;
 
 class NotificationService {
   // creating instance for firebaseMessaging to allow fcm
+  static final _firebaseMessaging = FirebaseMessaging.instance;
   //creating an instance for the FlutterLocalNotification plugin
   static final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
+
+  // request notification permission
+  static Future init() async {
+    await _firebaseMessaging.requestPermission(
+      alert: true,
+      announcement: true,
+      badge: true,
+      carPlay: false,
+      criticalAlert: true,
+      provisional: false,
+      sound: true,
+    );
+
+//get the device fcm token
+    final token = await _firebaseMessaging.getToken();
+    print( "Device token: $token");
+  }
 
   // Function to handle notification tap and navigate to MapArea
   static Future<void> onDidReceiveNotification(
@@ -20,8 +39,8 @@ class NotificationService {
     }
   }
 
-  //initializing the notification plugin
-  static Future<void> init() async {
+  //initializing the local notification plugin
+  static Future<void> localNotInit() async {
     //defining android initialization settings
     const AndroidInitializationSettings androidInitializationSettings =
         AndroidInitializationSettings("@mipmap/ic_launcher");
