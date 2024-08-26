@@ -1,15 +1,21 @@
+import 'package:get/get.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:get/get_navigation/get_navigation.dart';
-import 'package:timezone/timezone.dart' as tz;
+import 'package:your_app/pages/map_area.dart'; // replace with the actual import for your MapArea page
 
 class NotificationService {
   //creating an instance for the FlutterLocalNotification plugin
   static final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
+  // Function to handle notification tap and navigate to MapArea
   static Future<void> onDidReceiveNotification(
       NotificationResponse notificationResponse) async {
-    OnTap;
+    // Check if the notification was tapped
+    if (notificationResponse.notificationResponseType ==
+        NotificationResponseType.selectedNotification) {
+      // Navigate to MapArea
+      Get.to(() => MapArea()); // Navigating to MapArea page
+    }
   }
 
   //initializing the notification plugin
