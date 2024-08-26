@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:student_app/Dashboard/Case%20Analysis/location_services.dart';
+import '../../services/notification_services.dart';
 import '../../services/user_session.dart';
 
 class HelpRequestService {
@@ -13,6 +16,7 @@ class HelpRequestService {
   String? _referenceNumber;
   StreamSubscription<Position>? _positionStreamSubscription;
   String? _currentTrackingId;
+  Timer? _reconnectionTimer;
 
   Future<void> initialize() async {
     final userSession = UserSession();
@@ -22,30 +26,55 @@ class HelpRequestService {
     _referenceNumber = userSession.referenceNumber;
   }
 
-  Future<void> sendHelpRequest() async {
-    await _ensureInitialized();
-    try {
-      Position position = await _locationService.getCurrentPosition();
-      String trackingId = DateTime.now().millisecondsSinceEpoch.toString();
-      _currentTrackingId = trackingId;
+ Future<void> sendHelpRequest() async {
+  await _ensureInitialized();
+  try {
+    Position position = await _locationService.getCurrentPosition();
+    String trackingId = DateTime.now().millisecondsSinceEpoch.toString();
+    _currentTrackingId = trackingId;
 
-      await _firestore.collection('help_requests').doc(trackingId).set({
-        'studentUid': _studentUid!,
-        'studentName': _studentName,
-        'referenceNumber': _referenceNumber,
-        'initialLocation': GeoPoint(position.latitude, position.longitude),
-        'currentLocation': GeoPoint(position.latitude, position.longitude),
-        'timestamp': FieldValue.serverTimestamp(),
-        'trackingId': trackingId,
-        'status': 'active',
-      });
+    await _firestore.collection('help_requests').doc(trackingId).set({
+      'studentUid': _studentUid!,
+      'studentName': _studentName!,
+      'referenceNumber': _referenceNumber!,
+      'initialLocation': GeoPoint(position.latitude, position.longitude),
+      'currentLocation': GeoPoint(position.latitude, position.longitude),
+      'timestamp': FieldValue.serverTimestamp(),
+      'trackingId': trackingId,
+      'status': 'active',
+      'isRead': false,
+    });
 
-      startLiveLocationUpdates(trackingId);
-      Fluttertoast.showToast(msg: "Help request sent for $_studentName. Tracking ID: $trackingId");
-    } catch (e) {
-      Fluttertoast.showToast(msg: "Failed to send help request: $e");
-      rethrow;
+    startLiveLocationUpdates(trackingId);
+    Fluttertoast.showToast(msg: "Help request sent for $_studentName. Tracking ID: $trackingId");
+
+        // Send FCM notification to all police officers
+    await sendNotificationToAllPoliceOfficers(trackingId, _studentName!);
+  } on FirebaseException catch (e) {
+  // Handle Firestore-specific errors
+  Fluttertoast.showToast(msg: "Failed to send request: ${e.message}");
+} on SocketException catch (_) {
+  // Handle network errors
+  Fluttertoast.showToast(msg: "Network error. Please check your connection.");
+} catch (e) {
+  Fluttertoast.showToast(msg: "An unknown error occurred.");
+}
+}
+Future<void> sendNotificationToAllPoliceOfficers(String trackingId, String studentName) async {
+  QuerySnapshot policeOfficers = await _firestore.collection('police_officers').get();
+  for (var doc in policeOfficers.docs) {
+    String? token = doc.get('fcmToken');
+    if (token != null) {
+      await PushNotificationService.sendNotificationToSelectedPolice(token, trackingId, studentName);
     }
+  }
+}
+
+    // Update the read status when the notification is opened
+  Future<void> updateHelpRequestReadStatus(String trackingId, bool isRead) async {
+    await _firestore.collection('help_requests').doc(trackingId).update({
+      'isRead': isRead,
+    });
   }
 
   void startLiveLocationUpdates(String trackingId) {
@@ -53,14 +82,26 @@ class HelpRequestService {
     _positionStreamSubscription = Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
         accuracy: LocationAccuracy.high,
-        distanceFilter: 10,
+        distanceFilter: 5,
       ),
     ).listen((Position position) async {
       try {
         await updateLiveLocation(trackingId, position);
       } catch (e) {
         Fluttertoast.showToast(msg: "Error updating live location: $e");
-        // Implement retry logic here if needed
+        _scheduleReconnection();
+      }
+    }, onError: (error) {
+      Fluttertoast.showToast(msg: "Location stream error: $error");
+      _scheduleReconnection();
+    });
+  }
+
+  void _scheduleReconnection() {
+    _reconnectionTimer?.cancel();
+    _reconnectionTimer = Timer(const Duration(seconds: 10), () {
+      if (_currentTrackingId != null) {
+        startLiveLocationUpdates(_currentTrackingId!);
       }
     });
   }
@@ -70,10 +111,9 @@ class HelpRequestService {
       'currentLocation': GeoPoint(position.latitude, position.longitude),
       'lastUpdated': FieldValue.serverTimestamp(),
     });
-    Fluttertoast.showToast(msg: "Updated live location for $_studentName: ${position.latitude}, ${position.longitude}");
   }
 
-  Stream<String> getHelpRequestStatus() {
+  Stream<HelpRequestData> getHelpRequestUpdates() {
     if (_currentTrackingId == null) {
       throw Exception('No active help request');
     }
@@ -81,9 +121,21 @@ class HelpRequestService {
         .collection('help_requests')
         .doc(_currentTrackingId)
         .snapshots()
-        .map((snapshot) => snapshot.data()?['status'] as String? ?? 'unknown');
+        .map((snapshot) => HelpRequestData.fromSnapshot(snapshot));
   }
-
+  Stream<String> getHelpRequestStatus() {
+  if (_currentTrackingId == null) {
+    throw Exception('No active help request');
+  }
+  return _firestore
+      .collection('help_requests')
+      .doc(_currentTrackingId)
+      .snapshots()
+      .map((snapshot) {
+        final data = snapshot.data() as Map<String, dynamic>;
+        return data['status'] as String;
+      });
+}
   Future<void> endHelpRequest() async {
     if (_currentTrackingId == null) {
       throw Exception('No active help request');
@@ -93,6 +145,7 @@ class HelpRequestService {
       'resolvedAt': FieldValue.serverTimestamp(),
     });
     _positionStreamSubscription?.cancel();
+    _reconnectionTimer?.cancel();
     _currentTrackingId = null;
     Fluttertoast.showToast(msg: "Help request ended for $_studentName");
   }
@@ -101,5 +154,35 @@ class HelpRequestService {
     if (_studentUid == null) {
       await initialize();
     }
+  }
+  
+}
+
+class HelpRequestData {
+  final String status;
+  final LatLng studentLocation;
+  final LatLng? policeLocation;
+  final int? estimatedArrivalTime;
+
+  HelpRequestData({
+    required this.status,
+    required this.studentLocation,
+    this.policeLocation,
+    this.estimatedArrivalTime,
+  });
+
+  factory HelpRequestData.fromSnapshot(DocumentSnapshot snapshot) {
+    final data = snapshot.data() as Map<String, dynamic>;
+    final studentGeoPoint = data['currentLocation'] as GeoPoint;
+    final policeGeoPoint = data['policeLocation'] as GeoPoint?;
+
+    return HelpRequestData(
+      status: data['status'] as String,
+      studentLocation: LatLng(studentGeoPoint.latitude, studentGeoPoint.longitude),
+      policeLocation: policeGeoPoint != null
+          ? LatLng(policeGeoPoint.latitude, policeGeoPoint.longitude)
+          : null,
+      estimatedArrivalTime: data['estimatedArrivalTime'] as int?,
+    );
   }
 }

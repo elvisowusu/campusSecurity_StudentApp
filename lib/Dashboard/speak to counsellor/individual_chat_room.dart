@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
 import 'package:student_app/common/enum/message_type.dart';
 import 'package:keyboard_dismisser/keyboard_dismisser.dart';
 
@@ -13,7 +14,8 @@ class IndividualChatPage extends StatefulWidget {
   State<IndividualChatPage> createState() => _IndividualChatPageState();
 }
 
-class _IndividualChatPageState extends State<IndividualChatPage> with TickerProviderStateMixin {
+class _IndividualChatPageState extends State<IndividualChatPage>
+    with TickerProviderStateMixin {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final TextEditingController _messageController = TextEditingController();
@@ -22,6 +24,7 @@ class _IndividualChatPageState extends State<IndividualChatPage> with TickerProv
   final ScrollController _scrollController = ScrollController();
   final Map<String, AnimationController> _animationControllers = {};
   String? _replyingToMessage;
+  String? _selectedMessageId;
 
   @override
   void initState() {
@@ -82,16 +85,16 @@ class _IndividualChatPageState extends State<IndividualChatPage> with TickerProv
         'referenceNumber': referenceNumber,
       });
     }
-     String? replyingToMessageId;
-  if (_replyingToMessage != null) {
-    QuerySnapshot replyQuery = await _messagesCollection
-        .where('content', isEqualTo: _replyingToMessage)
-        .limit(1)
-        .get();
-    if (replyQuery.docs.isNotEmpty) {
-      replyingToMessageId = replyQuery.docs.first.id;
+    String? replyingToMessageId;
+    if (_replyingToMessage != null) {
+      QuerySnapshot replyQuery = await _messagesCollection
+          .where('content', isEqualTo: _replyingToMessage)
+          .limit(1)
+          .get();
+      if (replyQuery.docs.isNotEmpty) {
+        replyingToMessageId = replyQuery.docs.first.id;
+      }
     }
-  }
 
     await _messagesCollection.add({
       'senderId': _currentUser!.uid,
@@ -101,7 +104,7 @@ class _IndividualChatPageState extends State<IndividualChatPage> with TickerProv
       'participants': [_currentUser!.uid, widget.contactId],
       'read': false,
       'replyingTo': _replyingToMessage,
-    'replyingToId': replyingToMessageId,
+      'replyingToId': replyingToMessageId,
     });
 
     setState(() {
@@ -121,31 +124,106 @@ class _IndividualChatPageState extends State<IndividualChatPage> with TickerProv
       );
     }
   }
+
   void _scrollToMessage(String messageId) {
-  for (int i = 0; i < _scrollController.position.maxScrollExtent.toInt(); i++) {
-    if (_animationControllers.containsKey(messageId)) {
-      _scrollController.animateTo(
-        i.toDouble(),
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-      return;
+    for (int i = 0;
+        i < _scrollController.position.maxScrollExtent.toInt();
+        i++) {
+      if (_animationControllers.containsKey(messageId)) {
+        _scrollController.animateTo(
+          i.toDouble(),
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+        return;
+      }
     }
   }
-}
 
   String _formatTimestamp(Timestamp timestamp) {
-  DateTime dateTime = timestamp.toDate();
-  int hour = dateTime.hour;
-  String period = hour >= 12 ? 'PM' : 'AM';
-  hour = hour % 12;
-  hour = hour == 0 ? 12 : hour; // convert hour '0' to '12' for 12 AM/PM
-  return '${hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')} $period';
-}
+    DateTime dateTime = timestamp.toDate();
+    int hour = dateTime.hour;
+    String period = hour >= 12 ? 'PM' : 'AM';
+    hour = hour % 12;
+    hour = hour == 0 ? 12 : hour; // convert hour '0' to '12' for 12 AM/PM
+    return '${hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')} $period';
+  }
 
+    // Copy message to clipboard
+  void copyMessage(String content, BuildContext context) {
+    Clipboard.setData(ClipboardData(text: content));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Message copied to clipboard')),
+    );
+  }
 
-  Widget _buildMessageBubble(String message, bool isMe, String? replyingToMessage,
-      Timestamp timestamp, String messageId, MessageType messageType, String? replyingToMessageId) {
+  // Delete a message
+  Future<void> deleteMessage(
+      String messageId, CollectionReference messagesCollection, VoidCallback onSuccess) async {
+    await messagesCollection.doc(messageId).delete();
+    onSuccess();
+  }
+
+  // Build AppBar actions for copying or deleting the selected message
+  Widget buildAppBarActions(String? selectedMessageId, BuildContext context,
+      void Function(VoidCallback fn) setState) {
+    if (selectedMessageId == null) {
+      return const Text('Chat with Student');
+    } else {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.copy),
+            onPressed: () async {
+              // Retrieve the selected message content
+              DocumentSnapshot selectedMessageSnapshot =
+                  await _messagesCollection.doc(selectedMessageId).get();
+              String messageToCopy = selectedMessageSnapshot['content'];
+
+              // Copy the message to the clipboard
+              copyMessage(messageToCopy, context);
+
+              // Deselect the message after copying
+              setState(() {
+                _selectedMessageId = null;
+              });
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete),
+            onPressed: () async {
+              // Delete the selected message
+              deleteMessage(selectedMessageId, _messagesCollection, () {
+                // Callback after deletion
+                setState(() {
+                  _selectedMessageId = null;
+                });
+              });
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.cancel),
+            onPressed: () {
+              // Deselect the message (Cancel action)
+              setState(() {
+                _selectedMessageId = null;
+              });
+            },
+          ),
+        ],
+      );
+    }
+  }
+
+  Widget _buildMessageBubble(
+      String message,
+      bool isMe,
+      String? replyingToMessage,
+      Timestamp timestamp,
+      String messageId,
+      MessageType messageType,
+      String? replyingToMessageId) {
     if (!_animationControllers.containsKey(messageId)) {
       _animationControllers[messageId] = AnimationController(
         vsync: this,
@@ -158,7 +236,8 @@ class _IndividualChatPageState extends State<IndividualChatPage> with TickerProv
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: GestureDetector(
         onHorizontalDragUpdate: (details) {
-          animationController.value += details.primaryDelta! / 100 * (isMe ? -1 : 1);
+          animationController.value +=
+              details.primaryDelta! / 100 * (isMe ? -1 : 1);
         },
         onHorizontalDragEnd: (details) {
           if (animationController.value.abs() > 0.5) {
@@ -168,11 +247,18 @@ class _IndividualChatPageState extends State<IndividualChatPage> with TickerProv
           }
           animationController.reverse();
         },
+        onLongPress: () {
+          // Select the message
+          setState(() {
+            _selectedMessageId = messageId;
+          });
+        },
         child: AnimatedBuilder(
           animation: animationController,
           builder: (context, child) {
             return Transform.translate(
-              offset: Offset(50 * animationController.value * (isMe ? -1 : 1), 0),
+              offset:
+                  Offset(50 * animationController.value * (isMe ? -1 : 1), 0),
               child: Stack(
                 children: [
                   child!,
@@ -195,7 +281,8 @@ class _IndividualChatPageState extends State<IndividualChatPage> with TickerProv
           },
           child: Container(
             margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 8.0),
-            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
             constraints: BoxConstraints(
               maxWidth: MediaQuery.of(context).size.width * 0.5,
             ),
@@ -221,27 +308,27 @@ class _IndividualChatPageState extends State<IndividualChatPage> with TickerProv
               children: [
                 if (replyingToMessage != null)
                   GestureDetector(
-                  onTap: () {
-                    if (replyingToMessageId != null) {
-                      _scrollToMessage(replyingToMessageId);
-                    }
-                  },
-                  child:Container(
-                    margin: const EdgeInsets.only(bottom: 5.0),
-                    padding: const EdgeInsets.all(5.0),
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    child: Text(
-                      replyingToMessage,
-                      style: TextStyle(
-                        fontSize: 12.0,
-                        color: Colors.grey[600],
+                    onTap: () {
+                      if (replyingToMessageId != null) {
+                        _scrollToMessage(replyingToMessageId);
+                      }
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 5.0),
+                      padding: const EdgeInsets.all(5.0),
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      child: Text(
+                        replyingToMessage,
+                        style: TextStyle(
+                          fontSize: 12.0,
+                          color: Colors.grey[600],
+                        ),
                       ),
                     ),
-                  ),
                   ),
                 _buildMessageContent(message, messageType),
                 const SizedBox(height: 2),
@@ -268,13 +355,17 @@ class _IndividualChatPageState extends State<IndividualChatPage> with TickerProv
           style: const TextStyle(color: Colors.black),
         );
       case MessageType.image:
-        return Text('Image: $message', style: const TextStyle(color: Colors.black));
+        return Text('Image: $message',
+            style: const TextStyle(color: Colors.black));
       case MessageType.audio:
-        return Text('Audio: $message', style: const TextStyle(color: Colors.black));
+        return Text('Audio: $message',
+            style: const TextStyle(color: Colors.black));
       case MessageType.video:
-        return Text('Video: $message', style: const TextStyle(color: Colors.black));
+        return Text('Video: $message',
+            style: const TextStyle(color: Colors.black));
       case MessageType.gif:
-        return Text('GIF: $message', style: const TextStyle(color: Colors.black));
+        return Text('GIF: $message',
+            style: const TextStyle(color: Colors.black));
       default:
         return Text(message, style: const TextStyle(color: Colors.black));
     }
@@ -288,121 +379,127 @@ class _IndividualChatPageState extends State<IndividualChatPage> with TickerProv
         GestureType.onPanUpdateDownDirection,
       ],
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Chat with Counsellor'),
-        ),
-        body: Container(
-    decoration: const BoxDecoration(
-      image: DecorationImage(
-        image: AssetImage('assets/images/chatbg.png'),
-        fit: BoxFit.cover,
-      ),
-    ),
-        child:SafeArea(
-          child: Column(
-            children: [
-              Expanded(
-                child: StreamBuilder<QuerySnapshot>(
-                  stream: _messagesCollection.orderBy('timestamp', descending: true).snapshots(),
-                  builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                    if (!snapshot.hasData) {
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    }
-
-                    List<DocumentSnapshot> messages = snapshot.data!.docs;
-
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      _scrollToBottom();
-                    });
-
-                    return ListView.builder(
-                      reverse: true,
-                      controller: _scrollController,
-                      itemCount: messages.length,
-                      itemBuilder: (context, index) {
-                        DocumentSnapshot document = messages[index];
-                        Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-                        String message = data['content'];
-                        String senderId = data['senderId'];
-                        String? replyingToMessage = data['replyingTo'];
-                        Timestamp timestamp = data['timestamp'];
-                        MessageType messageType = (data['type'] as String).toEnum();
-                        bool isMe = senderId == _currentUser!.uid;
-                        String? replyingToMessageId = data['replyingToId'];
-                        return _buildMessageBubble(
-                          message,
-                          isMe,
-                          replyingToMessage,
-                          timestamp,
-                          document.id,
-                          messageType,
-                          replyingToMessageId,
-                        );
-                      },
-                    );
-                  },
-                ),
+          appBar: AppBar(
+            title: _selectedMessageId == null
+                ? const Text('Chat with Counselor')
+                : buildAppBarActions(_selectedMessageId, context, setState),
+          ),
+          body: Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/chatbg.png'),
+                fit: BoxFit.cover,
               ),
-              if (_replyingToMessage != null)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
+            ),
+            child: SafeArea(
+              child: Column(children: [
+                Expanded(
+                  child: StreamBuilder<QuerySnapshot>(
+                    stream: _messagesCollection
+                        .orderBy('timestamp', descending: true)
+                        .snapshots(),
+                    builder: (BuildContext context,
+                        AsyncSnapshot<QuerySnapshot> snapshot) {
+                      if (!snapshot.hasData) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
+
+                      List<DocumentSnapshot> messages = snapshot.data!.docs;
+
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        _scrollToBottom();
+                      });
+
+                      return ListView.builder(
+                        reverse: true,
+                        controller: _scrollController,
+                        itemCount: messages.length,
+                        itemBuilder: (context, index) {
+                          DocumentSnapshot document = messages[index];
+                          Map<String, dynamic> data =
+                              document.data() as Map<String, dynamic>;
+                          String message = data['content'];
+                          String senderId = data['senderId'];
+                          String? replyingToMessage = data['replyingTo'];
+                          Timestamp timestamp = data['timestamp'];
+                          MessageType messageType =
+                              (data['type'] as String).toEnum();
+                          bool isMe = senderId == _currentUser!.uid;
+                          String? replyingToMessageId = data['replyingToId'];
+                          return _buildMessageBubble(
+                            message,
+                            isMe,
+                            replyingToMessage,
+                            timestamp,
+                            document.id,
+                            messageType,
+                            replyingToMessageId,
+                          );
+                        },
+                      );
+                    },
                   ),
+                ),
+                if (_replyingToMessage != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Replying to: $_replyingToMessage',
+                            style: TextStyle(color: Colors.grey[700]),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () {
+                            setState(() {
+                              _replyingToMessage = null;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
                   child: Row(
                     children: [
                       Expanded(
-                        child: Text(
-                          'Replying to: $_replyingToMessage',
-                          style: TextStyle(color: Colors.grey[700]),
+                        child: TextField(
+                          controller: _messageController,
+                          decoration: InputDecoration(
+                            hintText: 'Type your message...',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20.0),
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
+                            contentPadding:
+                                const EdgeInsets.symmetric(horizontal: 15.0),
+                          ),
                         ),
                       ),
+                      const SizedBox(width: 8.0),
                       IconButton(
-                        icon: const Icon(Icons.close),
+                        icon: const Icon(Icons.send, color: Colors.green),
                         onPressed: () {
-                          setState(() {
-                            _replyingToMessage = null;
-                          });
+                          sendMessage(
+                              MessageType.text, _messageController.text);
                         },
                       ),
                     ],
                   ),
                 ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _messageController,
-                        decoration: InputDecoration(
-                          hintText: 'Type your message...',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20.0),
-                          ),
-                          filled: true,
-                          fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 15.0),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8.0),
-                    IconButton(
-                      icon: const Icon(Icons.send, color: Colors.green),
-                      onPressed: () {
-                        sendMessage(MessageType.text, _messageController.text);
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ]
-          ),
-        ),
-      )
-      ),
+              ]),
+            ),
+          )),
     );
   }
 }
