@@ -23,7 +23,7 @@ class NotificationService {
       sound: true,
     );
 
-//get the device fcm token
+    //get the device fcm token
     final token = await _firebaseMessaging.getToken();
     print( "Device token: $token");
   }

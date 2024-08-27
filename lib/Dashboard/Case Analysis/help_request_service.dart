@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:student_app/Dashboard/Case%20Analysis/location_services.dart';
 import '../../services/user_session.dart';
+//for proximity based notification 
 
 class HelpRequestService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
