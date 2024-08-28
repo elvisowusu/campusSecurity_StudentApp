@@ -1,152 +1,239 @@
-import 'dart:convert';
+PS C:\Users\owusu\Desktop\Student\campusSecurity_StudentApp> flutter run
+Launching lib\main.dart on SM A236U1 in debug mode...
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Warning: Human desugared library specification format version 200 mismatches the parser expected version (100). This is allowed and should happen only while extending the specifications.
+Error: java.lang.IllegalStateException: This is not a JSON Array.
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
 
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:sample_flutter_firebase_notifications_tutorial/controllers/auth_service.dart';
-import 'package:sample_flutter_firebase_notifications_tutorial/controllers/notification_service.dart';
-import 'package:sample_flutter_firebase_notifications_tutorial/firebase_options.dart';
-import 'package:sample_flutter_firebase_notifications_tutorial/views/home_page.dart';
-import 'package:sample_flutter_firebase_notifications_tutorial/views/login_page.dart';
-import 'package:sample_flutter_firebase_notifications_tutorial/views/message.dart';
-import 'package:sample_flutter_firebase_notifications_tutorial/views/signup_page.dart';
+FAILURE: Build failed with an exception.
 
-final navigatorKey = GlobalKey<NavigatorState>();
+* What went wrong:
+Execution failed for task ':app:l8DexDesugarLibDebug'.
+> A failure occurred while executing com.android.build.gradle.internal.tasks.L8DexWorkAction
+   > Compilation failed to complete
 
-// function to listen to background changes
-Future _firebaseBackgroundMessage(RemoteMessage message) async {
-  if (message.notification != null) {
-    print("Some notification Received in background...");
-  }
-}
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
 
-// to handle notification on foreground on web platform
-void showNotification({required String title, required String body}) {
-  showDialog(
-    context: navigatorKey.currentContext!,
-    builder: (context) => AlertDialog(
-      title: Text(title),
-      content: Text(body),
-      actions: [
-        TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: Text("Ok"))
-      ],
-    ),
-  );
-}
+* Get more help at https://help.gradle.org
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+BUILD FAILED in 4m 26s
+Running Gradle task 'assembleDebug'...                            268.1s
+Error: Gradle task assembleDebug failed with exit code 1
+PS C:\Users\owusu\Desktop\Student\campusSecurity_StudentApp> flutter run
+Launching lib\main.dart on SM A236U1 in debug mode...
+Running Gradle task 'assembleDebug'...                            308.4s
+√ Built build\app\outputs\flutter-apk\app-debug.apk
+Installing build\app\outputs\flutter-apk\app-debug.apk...          67.6s
+D/FlutterGeolocator( 7903): Attaching Geolocator to activity
+D/FlutterGeolocator( 7903): Creating service.
+D/FlutterGeolocator( 7903): Binding to location service.
+D/FlutterLocationService( 7903): Creating service.
+D/FlutterLocationService( 7903): Binding to location service.
+D/FlutterGeolocator( 7903): Geolocator foreground service connected
+D/FlutterGeolocator( 7903): Initializing Geolocator services
+D/FlutterGeolocator( 7903): Flutter engine connected. Connected engine count 1
+D/CompatibilityChangeReporter( 7903): Compat change id reported: 78294732; UID 10317; state: ENABLED
+I/ViewRootImpl@ce63e40[MainActivity]( 7903): stopped(false) old = false
+I/DecorView( 7903): notifyKeepScreenOnChanged: keepScreenOn=false
+I/MSHandlerLifeCycle( 7903): removeMultiSplitHandler: no exist. decor=DecorView@8a49e27[MainActivity]
+I/ViewRootImpl@ce63e40[MainActivity]( 7903): performTraversals params={(0,0)(fillxfill) sim={adjust=resize} ty=BASE_APPLICATION fmt=TRANSLUCENT wanim=0x1030001
+I/ViewRootImpl@ce63e40[MainActivity]( 7903):   fl=81810100
+I/ViewRootImpl@ce63e40[MainActivity]( 7903):   pfl=12020040
+I/ViewRootImpl@ce63e40[MainActivity]( 7903):   vsysui=500
+I/ViewRootImpl@ce63e40[MainActivity]( 7903):   bhv=DEFAULT
+I/ViewRootImpl@ce63e40[MainActivity]( 7903):   fitSides= naviIconColor=0}
+I/ViewRootImpl@ce63e40[MainActivity]( 7903): performTraversals mFirst=false windowShouldResize=false viewVisibilityChanged=false mForceNextWindowRelayout=false params={(0,0)(fillxfill) sim={adjust=resize} ty=BASE_APPLICATION fmt=TRANSLUCENT wanim=0x1030001
+I/ViewRootImpl@ce63e40[MainActivity]( 7903):   fl=81810100
+I/ViewRootImpl@ce63e40[MainActivity]( 7903):   pfl=12020040
+I/ViewRootImpl@ce63e40[MainActivity]( 7903):   vsysui=500
+I/ViewRootImpl@ce63e40[MainActivity]( 7903):   bhv=DEFAULT
+I/ViewRootImpl@ce63e40[MainActivity]( 7903):   fitSides= naviIconColor=0}
+I/ViewRootImpl@ce63e40[MainActivity]( 7903): updateBlastSurfaceIfNeeded mBlastBufferQueue=0xb400007c728a6e80 isSameSurfaceControl=true
+I/BLASTBufferQueue( 7903): update, w= 1080 h= 2408 mName = ViewRootImpl@ce63e40[MainActivity] mNativeObject= 0xb400007c728a6e80 sc.mNativeObject= 0xb400007cd673ad40 format= -3 caller= android.view.ViewRootImpl.updateBlastSurfaceIfNeeded:2898 android.view.ViewRootImpl.relayoutWindow:9847 android.view.ViewRootImpl.performTraversals:3884 android.view.ViewRootImpl.doTraversal:3116 android.view.ViewRootImpl$TraversalRunnable.run:10885 android.view.Choreographer$CallbackRecord.run:1301
+I/ViewRootImpl@ce63e40[MainActivity]( 7903): Relayout returned: old=(0,0,1080,2408) new=(0,0,1080,2408) req=(1080,2408)0 dur=36 res=0x1 s={true 0xb400007c469ea800} ch=false seqId=0
+I/ViewRootImpl@ce63e40[MainActivity]( 7903): updateBoundsLayer: t = android.view.SurfaceControl$Transaction@f117ad7 sc = Surface(name=Bounds for - com.example.student_app/com.example.student_app.MainActivity@0)/@0x728ffc4 frame = 1
+I/ViewRootImpl@ce63e40[MainActivity]( 7903): mWNT: t=0xb400007cd71ff900 mBlastBufferQueue=0xb400007c728a6e80 fn= 1 caller= android.view.ViewRootImpl.prepareSurfaces:2985 android.view.ViewRootImpl.performTraversals:4233 android.view.ViewRootImpl.doTraversal:3116
+I/ViewRootImpl@ce63e40[MainActivity]( 7903): reportNextDraw android.view.ViewRootImpl.performTraversals:4438 android.view.ViewRootImpl.doTraversal:3116 android.view.ViewRootImpl$TraversalRunnable.run:10885 android.view.Choreographer$CallbackRecord.run:1301 android.view.Choreographer$CallbackRecord.run:1309
+I/flutter ( 7903): Device token: dwZ7sVg3SeCDGyJd84XP-B:APA91bFNn3lrfjGDiUQagoQGTdT2tCH7xu8S6UWxuUAg7BuG_v0YxhMFgMmuzFRsuzJbDF1nBXug07eWFs-OBQbL5fkih3tZ5eo4S5furaE5bi8oUdF-rJU2NikCwHwvRvL0Dqqq8Z0Y
+I/FLTFireBGExecutor( 7903): Creating background FlutterEngine instance, with args: [--enable-dart-profiling]
+D/FLTFireContextHolder( 7903): received application context.
+D/FlutterGeolocator( 7903): Geolocator foreground service connected
+D/FlutterGeolocator( 7903): Initializing Geolocator services
+D/FlutterGeolocator( 7903): Flutter engine connected. Connected engine count 2
+D/ProfileInstaller( 7903): Installing profile for com.example.student_app
+I/FLTFireMsgService( 7903): FlutterFirebaseMessagingBackgroundService started!
+W/System  ( 7903): ClassLoader referenced unknown path:
+D/nativeloader( 7903): Configuring classloader-namespace for other apk . target_sdk_version=34, uses_libraries=, library_path=/data/app/~~rPmQZT6qnR62NpGvNBwp-w==/com.example.student_app-_uEAOpLfgun-aU0B70EYLQ==/lib/arm64:/data/app/~~rPmQZT6qnR62NpGvNBwp-w==/com.example.student_app-_uEAOpLfgun-aU0B70EYLQ==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand:/data/user/0/com.example.student_app
+I/ViewRootImpl@ce63e40[MainActivity]( 7903): stopped(true) old = false
+I/ViewRootImpl@ce63e40[MainActivity]( 7903): WindowStopped on com.example.student_app/com.example.student_app.MainActivity set to true
+I/SurfaceView@91a160e( 7903): windowStopped(true) false io.flutter.embedding.android.FlutterSurfaceView{91a160e V.E...... ......ID 0,0-1080,2273} of ViewRootImpl@ce63e40[MainActivity]
+I/SurfaceView@91a160e( 7903): Changes: creating=false format=false size=false visible=true alpha=false hint=false mUseAlpha=false visible=true left=false top=false
+I/SurfaceView@91a160e( 7903): 152704526 Cur surface: Surface(name=null)/@0xc0422cc
+I/SurfaceView@91a160e( 7903): applyTransactionOnVriDraw: vri = ViewRootImpl@ce63e40[MainActivity] fRS = false t = 0xb400007c46a9df00 android.view.SurfaceView.performSurfaceTransaction:959 android.view.SurfaceView.updateSurface:1105 android.view.SurfaceView.setWindowStopped:335
+I/ViewRootImpl@ce63e40[MainActivity]( 7903): applyTransactionOnDraw: mRemoved = false isHardwareEnabled = true t = 0xb400007c46a9df00android.view.SurfaceView.applyTransactionOnVriDraw:2048 android.view.SurfaceView.performSurfaceTransaction:959 android.view.SurfaceView.updateSurface:1105 android.view.SurfaceView.setWindowStopped:335 android.view.SurfaceView.surfaceDestroyed:1863
+I/SurfaceView@91a160e( 7903): surfaceDestroyed
+I/SurfaceView@91a160e( 7903): surfaceDestroyed callback.size 1 #1 io.flutter.embedding.android.FlutterSurfaceView{91a160e V.E...... ......ID 0,0-1080,2273}
+I/SurfaceView@91a160e( 7903): updateSurface: mVisible = false mSurface.isValid() = true
+I/SurfaceView@91a160e( 7903): releaseSurfaces: viewRoot = ViewRootImpl@ce63e40[MainActivity]
+I/SurfaceView@91a160e( 7903): applyTransactionOnVriDraw: vri = ViewRootImpl@ce63e40[MainActivity] fRS = true t = 0xb400007c72851300 android.view.SurfaceView.releaseSurfaces:858 android.view.SurfaceView.updateSurface:1172 android.view.SurfaceView.setWindowStopped:335
+I/SurfaceView@91a160e( 7903): applyTransactionOnVriDraw: viewRoot.applyTransactionOnDrawFromReleaseSurfaces
+I/ViewRootImpl@ce63e40[MainActivity]( 7903): applyTransactionOnDraw: mRemoved = false isHardwareEnabled = true t = 0xb400007c72851300android.view.ViewRootImpl.applyTransactionOnDrawFromReleaseSurfaces:12850 android.view.SurfaceView.applyTransactionOnVriDraw:2046 android.view.SurfaceView.releaseSurfaces:858 android.view.SurfaceView.updateSurface:1172 android.view.SurfaceView.setWindowStopped:335
+V/SurfaceView@91a160e( 7903): Layout: x=0 y=0 w=1080 h=2273, frame=Rect(0, 0 - 1080, 2273)
+D/SurfaceView@91a160e( 7903): updateSurface: surface is not valid
+I/SurfaceView@91a160e( 7903): releaseSurfaces: viewRoot = ViewRootImpl@ce63e40[MainActivity]
+I/SurfaceView@91a160e( 7903): applyTransactionOnVriDraw: vri = ViewRootImpl@ce63e40[MainActivity] fRS = true t = 0xb400007c72851000 android.view.SurfaceView.releaseSurfaces:858 android.view.SurfaceView.updateSurface:998 android.view.SurfaceView.setVisibility:392
+I/SurfaceView@91a160e( 7903): applyTransactionOnVriDraw: viewRoot.applyTransactionOnDrawFromReleaseSurfaces
+I/ViewRootImpl@ce63e40[MainActivity]( 7903): applyTransactionOnDraw: mRemoved = false isHardwareEnabled = true t = 0xb400007c72851000android.view.ViewRootImpl.applyTransactionOnDrawFromReleaseSurfaces:12850 android.view.SurfaceView.applyTransactionOnVriDraw:2046 android.view.SurfaceView.releaseSurfaces:858 android.view.SurfaceView.updateSurface:998 android.view.SurfaceView.setVisibility:392
+D/SurfaceView@91a160e( 7903):  setAlpha: mUseAlpha = false alpha=0.0
+D/SurfaceView@91a160e( 7903):  updateSurfaceAlpha: setUseAlpha() is not called, ignored.
+D/FlutterGeolocator( 7903): Detaching Geolocator from activity
+D/FlutterGeolocator( 7903): Flutter engine disconnected. Connected engine count 1
+D/FlutterGeolocator( 7903): Disposing Geolocator services
+E/FlutterGeolocator( 7903): Geolocator position updates stopped
+E/FlutterGeolocator( 7903): There is still another flutter engine connected, not stopping location service
+I/SurfaceView@91a160e( 7903): onWindowVisibilityChanged(8) false io.flutter.embedding.android.FlutterSurfaceView{91a160e G.E...... ......ID 0,0-1080,2273} of ViewRootImpl@ce63e40[MainActivity]
+D/SurfaceView@91a160e( 7903): updateSurface: surface is not valid
+I/SurfaceView@91a160e( 7903): releaseSurfaces: viewRoot = ViewRootImpl@ce63e40[MainActivity]
+I/SurfaceView@91a160e( 7903): applyTransactionOnVriDraw: vri = ViewRootImpl@ce63e40[MainActivity] fRS = true t = 0xb400007cd73f0300 android.view.SurfaceView.releaseSurfaces:858 android.view.SurfaceView.updateSurface:998 android.view.SurfaceView.onWindowVisibilityChanged:371
+I/SurfaceView@91a160e( 7903): applyTransactionOnVriDraw: viewRoot.applyTransactionOnDrawFromReleaseSurfaces
+I/ViewRootImpl@ce63e40[MainActivity]( 7903): applyTransactionOnDraw: mRemoved = true isHardwareEnabled = true t = 0xb400007cd73f0300android.view.ViewRootImpl.applyTransactionOnDrawFromReleaseSurfaces:12850 android.view.SurfaceView.applyTransactionOnVriDraw:2046 android.view.SurfaceView.releaseSurfaces:858 android.view.SurfaceView.updateSurface:998 android.view.SurfaceView.onWindowVisibilityChanged:371
+D/SurfaceView@91a160e( 7903): updateSurface: surface is not valid
+I/SurfaceView@91a160e( 7903): releaseSurfaces: viewRoot = ViewRootImpl@ce63e40[MainActivity]
+I/SurfaceView@91a160e( 7903): applyTransactionOnVriDraw: vri = ViewRootImpl@ce63e40[MainActivity] fRS = true t = 0xb400007cd73f0200 android.view.SurfaceView.releaseSurfaces:858 android.view.SurfaceView.updateSurface:998 android.view.SurfaceView.onDetachedFromWindow:496
+I/SurfaceView@91a160e( 7903): applyTransactionOnVriDraw: viewRoot.applyTransactionOnDrawFromReleaseSurfaces
+I/ViewRootImpl@ce63e40[MainActivity]( 7903): applyTransactionOnDraw: mRemoved = true isHardwareEnabled = true t = 0xb400007cd73f0200android.view.ViewRootImpl.applyTransactionOnDrawFromReleaseSurfaces:12850 android.view.SurfaceView.applyTransactionOnVriDraw:2046 android.view.SurfaceView.releaseSurfaces:858 android.view.SurfaceView.updateSurface:998 android.view.SurfaceView.onDetachedFromWindow:496
+I/SurfaceView@91a160e( 7903): onDetachedFromWindow: tryReleaseSurfaces()
+I/SurfaceView@91a160e( 7903): releaseSurfaces: viewRoot = ViewRootImpl@ce63e40[MainActivity]
+I/SurfaceView@91a160e( 7903): applyTransactionOnVriDraw: vri = ViewRootImpl@ce63e40[MainActivity] fRS = true t = 0xb400007cd73f0100 android.view.SurfaceView.releaseSurfaces:858 android.view.SurfaceView.onDetachedFromWindow:500 android.view.View.dispatchDetachedFromWindow:22538
+I/SurfaceView@91a160e( 7903): applyTransactionOnVriDraw: viewRoot.applyTransactionOnDrawFromReleaseSurfaces
+I/ViewRootImpl@ce63e40[MainActivity]( 7903): applyTransactionOnDraw: mRemoved = true isHardwareEnabled = true t = 0xb400007cd73f0100android.view.ViewRootImpl.applyTransactionOnDrawFromReleaseSurfaces:12850 android.view.SurfaceView.applyTransactionOnVriDraw:2046 android.view.SurfaceView.releaseSurfaces:858 android.view.SurfaceView.onDetachedFromWindow:500 android.view.View.dispatchDetachedFromWindow:22538
+I/MSHandlerLifeCycle( 7903): removeMultiSplitHandler: no exist. decor=DecorView@8a49e27[MainActivity]
+D/OpenGLRenderer( 7903): setSurface called with nullptr
+D/OpenGLRenderer( 7903): setSurface() destroyed EGLSurface
+D/OpenGLRenderer( 7903): destroyEglSurface
+I/ViewRootImpl@ce63e40[MainActivity]( 7903): dispatchDetachedFromWindow
+D/InputTransport( 7903): Input channel destroyed: '833a396', fd=122
+D/FLTFireContextHolder( 7903): received application context.
+D/FlutterGeolocator( 7903): Attaching Geolocator to activity
+D/SurfaceView@d9b8b14( 7903):  setAlpha: mUseAlpha = false alpha=0.0
+D/SurfaceView@d9b8b14( 7903):  updateSurfaceAlpha: setUseAlpha() is not called, ignored.
+I/DecorView( 7903): [INFO] isPopOver=false config=true
+I/DecorView( 7903): updateCaptionType: isFloating=false isApplication=true hasWindowDecorCaption=false this=DecorView@89528ac[]
+D/DecorView( 7903): setCaptionType = 0, this = DecorView@89528ac[]
+I/DecorView( 7903): getCurrentDensityDpi: from real metrics. densityDpi=450 msg=resources_loaded
+I/DecorView( 7903): setWindowBackground: isPopOver=false color=ff000000 d=android.graphics.drawable.ColorDrawable@8593d0a
+I/MSHandlerLifeCycle( 7903): check: return. pkg=com.example.student_app parent=null callers=com.android.internal.policy.DecorView.setVisibility:4412 android.app.ActivityThread.handleResumeActivity:5476 android.app.servertransaction.ResumeActivityItem.execute:54 android.app.servertransaction.ActivityTransactionItem.execute:45 android.app.servertransaction.TransactionExecutor.executeLifecycleState:176
+I/MSHandlerLifeCycle( 7903): removeMultiSplitHandler: no exist. decor=DecorView@89528ac[]
+D/NativeCustomFrequencyManager( 7903): [NativeCFMS] BpCustomFrequencyManager::BpCustomFrequencyManager()
+I/DecorView( 7903): notifyKeepScreenOnChanged: keepScreenOn=false
+D/InsetsController( 7903): onStateChanged: InsetsState: {mDisplayFrame=Rect(0, 0 - 1080, 2408), mDisplayCutout=DisplayCutout{insets=Rect(0, 65 - 0, 0) waterfall=Insets{left=0, top=0, right=0, bottom=0} boundingRect={Bounds=[Rect(0, 0 - 0, 0), Rect(454, 0 - 626, 65), Rect(0, 0 - 0, 0), Rect(0, 0 - 0, 0)]} cutoutPathParserInfo={CutoutPathParserInfo{displayWidth=1080 displayHeight=2408 physicalDisplayWidth=1080 physicalDisplayHeight=2408 density={2.8125} cutoutSpec={M 0,0 H -30.57777777777778 V 23.11111111111111 H 30.57777777777778 V 0 H 0 Z @dp} rotation={0} scale={1.0} physicalPixelDisplaySizeRatio={1.0}}}}, mRoundedCorners=RoundedCorners{[RoundedCorner{position=TopLeft, radius=90, center=Point(90, 90)}, RoundedCorner{position=TopRight, radius=90, center=Point(990, 90)}, RoundedCorner{position=BottomRight, radius=90, center=Point(990, 2318)}, RoundedCorner{position=BottomLeft, radius=90, center=Point(90, 2318)}]}  mRoundedCornerFrame=Rect(0, 0 - 1080, 2408), mPrivacyIndicatorBounds=PrivacyIndicatorBounds {static bounds=Rect(956, 0 - 1080, 70) rotation=0}, mSources= { InsetsSource: {mType=ITYPE_STATUS_BAR, mFrame=[0,0][1080,70], mVisible=true, mInsetsRoundedCornerFrame=false}, InsetsSource: {mType=ITYPE_NAVIGATION_BAR, mFrame=[0,2273][1080,2408], mVisible=true, mInsetsRoundedCornerFrame=false}, InsetsSource: {mType=ITYPE_LEFT_GESTURES, mFrame=[0,0][0,2408], mVisible=true, mInsetsRoundedCornerFrame=false}, InsetsSource: {mType=ITYPE_RIGHT_GESTURES, mFrame=[1080,0][1080,2408], mVisible=true, mInsetsRoundedCornerFrame=false}, InsetsSource: {mType=ITYPE_TOP_MANDATORY_GESTURES, mFrame=[0,0][1080,99], mVisible=true, mInsetsRoundedCornerFrame=false}, InsetsSource: {mType=ITYPE_BOTTOM_MANDATORY_GESTURES, mFrame=[0,2273][1080,2408], mVisible=true, mInsetsRoundedCornerFrame=false}, InsetsSource: {mType=ITYPE_LEFT_DISPLAY_CUTOUT, mFrame=[0,0][-100000,2408], mVisible=true, mInsetsRoundedCornerFrame=false}, InsetsSource: {mType=ITYPE_TOP_DISPLAY_CUTOUT, mFrame=[0,0][1080,65], mVisible=true, mInsetsRoundedCornerFrame=false}, InsetsSource: {mType=ITYPE_RIGHT_DISPLAY_CUTOUT, mFrame=[100000,0][1080,2408], mVisible=true, mInsetsRoundedCornerFrame=false}, InsetsSource: {mType=ITYPE_BOTTOM_DISPLAY_CUTOUT, mFrame=[0,100000][1080,2408], mVisible=true, mInsetsRoundedCornerFrame=false}, InsetsSource: {mType=ITYPE_TOP_TAPPABLE_ELEMENT, mFrame=[0,0][1080,70], mVisible=true, mInsetsRoundedCornerFrame=false}, InsetsSource: {mType=ITYPE_BOTTOM_TAPPABLE_ELEMENT, mFrame=[0,2273][1080,2408], mVisible=true, mInsetsRoundedCornerFrame=false} } host=com.example.student_app/com.example.student_app.MainActivity from=android.view.ViewRootImpl.setView:1732        
+I/ViewRootImpl@e54397b[MainActivity]( 7903): setView = com.android.internal.policy.DecorView@89528ac TM=true
+I/MSHandlerLifeCycle( 7903): removeMultiSplitHandler: no exist. decor=DecorView@89528ac[MainActivity]
+I/Choreographer( 7903): Skipped 49 frames!  The application may be doing too much work on its main thread.
+I/SurfaceView@d9b8b14( 7903): onWindowVisibilityChanged(0) true io.flutter.embedding.android.FlutterSurfaceView{d9b8b14 V.E...... ......I. 0,0-0,0} of ViewRootImpl@e54397b[MainActivity]
+D/SurfaceView@d9b8b14( 7903): updateSurface: has no frame
+I/ViewRootImpl@e54397b[MainActivity]( 7903): performTraversals params={(0,0)(fillxfill) sim={adjust=resize forwardNavigation} ty=BASE_APPLICATION wanim=0x1030001
+I/ViewRootImpl@e54397b[MainActivity]( 7903):   fl=81810100
+I/ViewRootImpl@e54397b[MainActivity]( 7903):   pfl=12020040
+I/ViewRootImpl@e54397b[MainActivity]( 7903):   vsysui=500
+I/ViewRootImpl@e54397b[MainActivity]( 7903):   bhv=DEFAULT
+I/ViewRootImpl@e54397b[MainActivity]( 7903):   fitSides= naviIconColor=0}
+I/ViewRootImpl@e54397b[MainActivity]( 7903): performTraversals mFirst=true windowShouldResize=true viewVisibilityChanged=false mForceNextWindowRelayout=false params={(0,0)(fillxfill) sim={adjust=resize forwardNavigation} ty=BASE_APPLICATION fmt=TRANSLUCENT wanim=0x1030001
+I/ViewRootImpl@e54397b[MainActivity]( 7903):   fl=81810100
+I/ViewRootImpl@e54397b[MainActivity]( 7903):   pfl=12020040
+I/ViewRootImpl@e54397b[MainActivity]( 7903):   vsysui=500
+I/ViewRootImpl@e54397b[MainActivity]( 7903):   bhv=DEFAULT
+I/ViewRootImpl@e54397b[MainActivity]( 7903):   fitSides= naviIconColor=0}
+I/ViewRootImpl@e54397b[MainActivity]( 7903): updateBlastSurfaceIfNeeded mBlastBufferQueue=null isSameSurfaceControl=false
+I/BLASTBufferQueue( 7903): new BLASTBufferQueue, mName= ViewRootImpl@e54397b[MainActivity] mNativeObject= 0xb400007c72930f80 sc.mNativeObject= 0xb400007c46af24a0 caller= android.view.ViewRootImpl.updateBlastSurfaceIfNeeded:2909 android.view.ViewRootImpl.relayoutWindow:9847 android.view.ViewRootImpl.performTraversals:3884 android.view.ViewRootImpl.doTraversal:3116 android.view.ViewRootImpl$TraversalRunnable.run:10885 android.view.Choreographer$CallbackRecord.run:1301 android.view.Choreographer$CallbackRecord.run:1309 android.view.Choreographer.doCallbacks:923 android.view.Choreographer.doFrame:852 android.view.Choreographer$FrameDisplayEventReceiver.run:1283
+I/BLASTBufferQueue( 7903): update, w= 1080 h= 2408 mName = ViewRootImpl@e54397b[MainActivity] mNativeObject= 0xb400007c72930f80 sc.mNativeObject= 0xb400007c46af24a0 format= -3 caller= android.graphics.BLASTBufferQueue.<init>:84 android.view.ViewRootImpl.updateBlastSurfaceIfNeeded:2909 android.view.ViewRootImpl.relayoutWindow:9847 android.view.ViewRootImpl.performTraversals:3884 android.view.ViewRootImpl.doTraversal:3116 android.view.ViewRootImpl$TraversalRunnable.run:10885
+I/ViewRootImpl@e54397b[MainActivity]( 7903): Relayout returned: old=(0,0,1080,2408) new=(0,0,1080,2408) req=(1080,2408)0 dur=11 res=0x3 s={true 0xb400007c46cd1800} ch=true seqId=0
+D/OpenGLRenderer( 7903): eglCreateWindowSurface
+I/ViewRootImpl@e54397b[MainActivity]( 7903): mThreadedRenderer.initialize() mSurface={isValid=true 0xb400007c46cd1800} hwInitialized=true
+D/SurfaceView@d9b8b14( 7903): updateSurface: has no frame
+I/SurfaceView@d9b8b14( 7903): windowStopped(false) true io.flutter.embedding.android.FlutterSurfaceView{d9b8b14 V.E...... ......ID 0,0-1080,2273} of ViewRootImpl@e54397b[MainActivity]
+D/SurfaceView@d9b8b14( 7903): updateSurface: has no frame
+I/ViewRootImpl@e54397b[MainActivity]( 7903): reportNextDraw android.view.ViewRootImpl.performTraversals:4438 android.view.ViewRootImpl.doTraversal:3116 android.view.ViewRootImpl$TraversalRunnable.run:10885 android.view.Choreographer$CallbackRecord.run:1301 android.view.Choreographer$CallbackRecord.run:1309
+I/SurfaceView@d9b8b14( 7903): Changes: creating=true format=true size=true visible=true alpha=false hint=false mUseAlpha=false visible=true left=true top=true
+I/BLASTBufferQueue( 7903): update, w= 1080 h= 2273 mName = null mNativeObject= 0xb400007c72932f00 sc.mNativeObject= 0xb400007c46af34e0 format= 4 caller= android.view.SurfaceView.createBlastSurfaceControls:1383 android.view.SurfaceView.updateSurface:1079 android.view.SurfaceView.lambda$new$0$android-view-SurfaceView:200 android.view.SurfaceView$$ExternalSyntheticLambda5.onPreDraw:2 android.view.ViewTreeObserver.dispatchOnPreDraw:1121 android.view.ViewRootImpl.performTraversals:4442
+I/SurfaceView@d9b8b14( 7903): 228297492 Cur surface: Surface(name=null)/@0x847d22d
+I/SurfaceView@d9b8b14( 7903): pST: sr = Rect(0, 0 - 1080, 2273) sw = 1080 sh = 2273
+D/SurfaceView@d9b8b14( 7903): performSurfaceTransaction RenderWorker position = [0, 0, 1080, 2273] surfaceSize = 1080x2273
+I/SurfaceView@d9b8b14( 7903): applyTransactionOnVriDraw: vri = ViewRootImpl@e54397b[MainActivity] fRS = false t = 0xb400007c46c2d100 android.view.SurfaceView.performSurfaceTransaction:959 android.view.SurfaceView.updateSurface:1105 android.view.SurfaceView.lambda$new$0$android-view-SurfaceView:200
+I/ViewRootImpl@e54397b[MainActivity]( 7903): applyTransactionOnDraw: mRemoved = false isHardwareEnabled = true t = 0xb400007c46c2d100android.view.SurfaceView.applyTransactionOnVriDraw:2048 android.view.SurfaceView.performSurfaceTransaction:959 android.view.SurfaceView.updateSurface:1105 android.view.SurfaceView.lambda$new$0$android-view-SurfaceView:200 android.view.SurfaceView$$ExternalSyntheticLambda5.onPreDraw:2
+I/SurfaceView@d9b8b14( 7903): updateSurface: mVisible = true mSurface.isValid() = true
+I/SurfaceView@d9b8b14( 7903): updateSurface: mSurfaceCreated = false surfaceChanged = true visibleChanged = true
+I/SurfaceView@d9b8b14( 7903): visibleChanged -- surfaceCreated
+I/SurfaceView@d9b8b14( 7903): surfaceCreated 1 #8 io.flutter.embedding.android.FlutterSurfaceView{d9b8b14 V.E...... ......ID 0,0-1080,2273}
+I/SurfaceView@d9b8b14( 7903): surfaceChanged -- format=4 w=1080 h=2273
+I/SurfaceView@d9b8b14( 7903): surfaceChanged (1080,2273) 1 #8 io.flutter.embedding.android.FlutterSurfaceView{d9b8b14 V.E...... ......ID 0,0-1080,2273}
+I/SurfaceView@d9b8b14( 7903): surfaceRedrawNeeded
+V/SurfaceView@d9b8b14( 7903): Layout: x=0 y=0 w=1080 h=2273, frame=Rect(0, 0 - 1080, 2273)
+D/FlutterLocationService( 7903): Unbinding from location service.
+D/FlutterLocationService( 7903): Destroying service.
+D/FlutterGeolocator( 7903): Geolocator foreground service connected
+D/FlutterGeolocator( 7903): Initializing Geolocator services
+D/FlutterGeolocator( 7903): Flutter engine connected. Connected engine count 2
+D/FlutterLocationService( 7903): Creating service.
+D/FlutterLocationService( 7903): Binding to location service.
+I/SurfaceView@d9b8b14( 7903): finishedDrawing
+D/LocationPlugin( 7903): Service connected: ComponentInfo{com.example.student_app/com.lyokone.location.FlutterLocationService}
+I/flutter ( 7903): Device token: dwZ7sVg3SeCDGyJd84XP-B:APA91bFNn3lrfjGDiUQagoQGTdT2tCH7xu8S6UWxuUAg7BuG_v0YxhMFgMmuzFRsuzJbDF1nBXug07eWFs-OBQbL5fkih3tZ5eo4S5furaE5bi8oUdF-rJU2NikCwHwvRvL0Dqqq8Z0Y
+W/FLTFireMsgService( 7903): Attempted to start a duplicate background isolate. Returning...
+D/OpenGLRenderer( 7903): setSurface called with nullptr
+I/BLASTBufferQueue( 7903): [SurfaceView[com.example.student_app/com.example.student_app.MainActivity]@0#3](f:0,a:0) onFrameAvailable the first frame is available
+D/SurfaceView@d9b8b14( 7903):  setAlpha: mUseAlpha = false alpha=1.0
+D/SurfaceView@d9b8b14( 7903):  updateSurfaceAlpha: setUseAlpha() is not called, ignored.
+I/ViewRootImpl@e54397b[MainActivity]( 7903): Setup new sync id=0
+I/ViewRootImpl@e54397b[MainActivity]( 7903): Setting syncFrameCallback
+I/ViewRootImpl@e54397b[MainActivity]( 7903): registerCallbacksForSync syncBuffer=false
+D/SurfaceView@d9b8b14( 7903): updateSurfacePosition RenderWorker, frameNr = 1, position = [0, 0, 1080, 2273] surfaceSize = 1080x2273
+I/SurfaceView@d9b8b14( 7903): uSP: rtp = Rect(0, 0 - 1080, 2273) rtsw = 1080 rtsh = 2273
+I/SurfaceView@d9b8b14( 7903): onSSPAndSRT: pl = 0 pt = 0 sx = 1.0 sy = 1.0
+I/SurfaceView@d9b8b14( 7903): aOrMT: ViewRootImpl@e54397b[MainActivity] t = android.view.SurfaceControl$Transaction@811a2c8 fN = 1 android.view.SurfaceView.-$$Nest$mapplyOrMergeTransaction:0 android.view.SurfaceView$SurfaceViewPositionUpdateListener.positionChanged:1537 android.graphics.RenderNode$CompositePositionUpdateListener.positionChanged:373      
+I/ViewRootImpl@e54397b[MainActivity]( 7903): mWNT: t=0xb400007c46c2d200 mBlastBufferQueue=0xb400007c72930f80 fn= 1 caller= android.view.SurfaceView.applyOrMergeTransaction:1455 android.view.SurfaceView.-$$Nest$mapplyOrMergeTransaction:0 android.view.SurfaceView$SurfaceViewPositionUpdateListener.positionChanged:1537
+I/ViewRootImpl@e54397b[MainActivity]( 7903): mWNT: t=0xb400007c46c2d100 mBlastBufferQueue=0xb400007c72930f80 fn= 1 caller= android.view.ViewRootImpl.lambda$applyTransactionOnDraw$11$android-view-ViewRootImpl:12865 android.view.ViewRootImpl$$ExternalSyntheticLambda1.onFrameDraw:4 android.graphics.HardwareRenderer$FrameDrawingCallback.onFrameDraw:924      
+I/ViewRootImpl@e54397b[MainActivity]( 7903): Received frameDrawingCallback syncResult=0 frameNum=1.
+I/ViewRootImpl@e54397b[MainActivity]( 7903): Setting up sync and frameCommitCallback
+I/BLASTBufferQueue( 7903): [ViewRootImpl@e54397b[MainActivity]#2](f:0,a:0) onFrameAvailable the first frame is available
+I/ViewRootImpl@e54397b[MainActivity]( 7903): Received frameCommittedCallback lastAttemptedDrawFrameNum=1 didProduceBuffer=true
+D/OpenGLRenderer( 7903): CFMS:: SetUp Pid : 7903    Tid : 8126
+W/Parcel  ( 7903): Expecting binder but got null!
+I/ViewRootImpl@e54397b[MainActivity]( 7903): onSyncComplete
+I/ViewRootImpl@e54397b[MainActivity]( 7903): setupSync seqId=0 mSyncId=0 fn=1 caller=android.view.ViewRootImpl$$ExternalSyntheticLambda11.accept:6 android.window.SurfaceSyncer.lambda$setupSync$1$android-window-SurfaceSyncer:128 android.window.SurfaceSyncer$$ExternalSyntheticLambda1.accept:8 android.window.SurfaceSyncer$SyncSet.checkIfSyncIsComplete:382 android.window.SurfaceSyncer$SyncSet.markSyncReady:359 android.window.SurfaceSyncer.markSyncReady:151 android.view.ViewRootImpl.performTraversals:4503
+I/ViewRootImpl@e54397b[MainActivity]( 7903): reportDrawFinished seqId=0 mSyncId=-1 fn=1 mSurfaceChangedTransaction=0xb400007c72908e00
+I/ViewRootImpl@e54397b[MainActivity]( 7903): MSG_WINDOW_FOCUS_CHANGED 1 0
+I/ViewRootImpl@e54397b[MainActivity]( 7903): mThreadedRenderer.initializeIfNeeded()#2 mSurface={isValid=true 0xb400007c46cd1800}
+D/InputMethodManager( 7903): startInputInner - Id : 0
+I/InputMethodManager( 7903): startInputInner - mService.startInputOrWindowGainedFocus
+D/InputMethodManager( 7903): startInputInner - Id : 0
+D/InsetsController( 7903): onStateChanged: InsetsState: {mDisplayFrame=Rect(0, 0 - 1080, 2408), mDisplayCutout=DisplayCutout{insets=Rect(0, 65 - 0, 0) waterfall=Insets{left=0, top=0, right=0, bottom=0} boundingRect={Bounds=[Rect(0, 0 - 0, 0), Rect(454, 0 - 626, 65), Rect(0, 0 - 0, 0), Rect(0, 0 - 0, 0)]} cutoutPathParserInfo={CutoutPathParserInfo{displayWidth=1080 displayHeight=2408 physicalDisplayWidth=1080 physicalDisplayHeight=2408 density={2.8125} cutoutSpec={M 0,0 H -30.57777777777778 V 23.11111111111111 H 30.57777777777778 V 0 H 0 Z @dp} rotation={0} scale={1.0} physicalPixelDisplaySizeRatio={1.0}}}}, mRoundedCorners=RoundedCorners{[RoundedCorner{position=TopLeft, radius=90, center=Point(90, 90)}, RoundedCorner{position=TopRight, radius=90, center=Point(990, 90)}, RoundedCorner{position=BottomRight, radius=90, center=Point(990, 2318)}, RoundedCorner{position=BottomLeft, radius=90, center=Point(90, 2318)}]}  mRoundedCornerFrame=Rect(0, 0 - 1080, 2408), mPrivacyIndicatorBounds=PrivacyIndicatorBounds {static bounds=Rect(956, 0 - 1080, 70) rotation=0}, mSources= { InsetsSource: {mType=ITYPE_STATUS_BAR, mFrame=[0,0][1080,70], mVisible=true, mInsetsRoundedCornerFrame=false}, InsetsSource: {mType=ITYPE_NAVIGATION_BAR, mFrame=[0,2273][1080,2408], mVisible=true, mInsetsRoundedCornerFrame=false}, InsetsSource: {mType=ITYPE_LEFT_GESTURES, mFrame=[0,0][0,2408], mVisible=true, mInsetsRoundedCornerFrame=false}, InsetsSource: {mType=ITYPE_RIGHT_GESTURES, mFrame=[1080,0][1080,2408], mVisible=true, mInsetsRoundedCornerFrame=false}, InsetsSource: {mType=ITYPE_TOP_MANDATORY_GESTURES, mFrame=[0,0][1080,99], mVisible=true, mInsetsRoundedCornerFrame=false}, InsetsSource: {mType=ITYPE_BOTTOM_MANDATORY_GESTURES, mFrame=[0,2273][1080,2408], mVisible=true, mInsetsRoundedCornerFrame=false}, InsetsSource: {mType=ITYPE_LEFT_DISPLAY_CUTOUT, mFrame=[0,0][-100000,2408], mVisible=true, mInsetsRoundedCornerFrame=false}, InsetsSource: {mType=ITYPE_TOP_DISPLAY_CUTOUT, mFrame=[0,0][1080,65], mVisible=true, mInsetsRoundedCornerFrame=false}, InsetsSource: {mType=ITYPE_RIGHT_DISPLAY_CUTOUT, mFrame=[100000,0][1080,2408], mVisible=true, mInsetsRoundedCornerFrame=false}, InsetsSource: {mType=ITYPE_BOTTOM_DISPLAY_CUTOUT, mFrame=[0,100000][1080,2408], mVisible=true, mInsetsRoundedCornerFrame=false}, InsetsSource: {mType=ITYPE_TOP_TAPPABLE_ELEMENT, mFrame=[0,0][1080,70], mVisible=true, mInsetsRoundedCornerFrame=false}, InsetsSource: {mType=ITYPE_BOTTOM_TAPPABLE_ELEMENT, mFrame=[0,2273][1080,2408], mVisible=true, mInsetsRoundedCornerFrame=false}, InsetsSource: {mType=ITYPE_IME, mFrame=[0,0][0,0], mVisibleFrame=[0,1400][1080,2408], mVisible=false, mInsetsRoundedCornerFrame=false} } host=com.example.student_app/com.example.student_app.MainActivity from=android.view.ViewRootImpl$ViewRootHandler.handleMessageImpl:6740
+W/OnBackInvokedCallback( 7903): OnBackInvokedCallback is not enabled for the application.
+W/OnBackInvokedCallback( 7903): Set 'android:enableOnBackInvokedCallback="true"' in the application manifest.
+V/MediaMetadataRetriever( 7903): constructor
+V/MediaMetadataRetriever( 7903): setDataSource(IDataSource)
+V/MediaMetadataRetriever( 7903): setDataSource(IDataSource) return(0)
+V/MediaMetadataRetriever( 7903): extractMetadata(26)
+V/MediaMetadataRetriever( 7903): extractMetadata(17)
+V/MediaMetadataRetriever( 7903): getImageAtIndex: index(-1) colorFormat(4) metaOnly(1) thumbnail(0)
+V/MediaMetadataRetriever( 7903): getImageAtIndex: index(-1) colorFormat(1) metaOnly(0) thumbnail(0)
+V/MediaMetadataRetriever( 7903): destructor
+V/MediaMetadataRetriever( 7903): disconnect
+Syncing files to device SM A236U1...                               962ms
 
-  // initialize firebase messaging
-  await PushNotifications.init();
+Flutter run key commands.
+r Hot reload.
+R Hot restart.
+h List all available interactive commands.
+d Detach (terminate "flutter run" but leave application running).
+c Clear the screen
+q Quit (terminate the application on the device).
 
-  // initialize local notifications
-  // dont use local notifications for web platform
-  if (!kIsWeb) {
-    await PushNotifications.localNotiInit();
-  }
-
-  // Listen to background notifications
-  FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundMessage);
-
-  // on background notification tapped
-  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-    if (message.notification != null) {
-      print("Background Notification Tapped");
-      navigatorKey.currentState!.pushNamed("/message", arguments: message);
-    }
-  });
-
-// to handle foreground notifications
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    String payloadData = jsonEncode(message.data);
-    print("Got a message in foreground");
-    if (message.notification != null) {
-      if (kIsWeb) {
-        showNotification(
-            title: message.notification!.title!,
-            body: message.notification!.body!);
-      } else {
-        PushNotifications.showSimpleNotification(
-            title: message.notification!.title!,
-            body: message.notification!.body!,
-            payload: payloadData);
-      }
-    }
-  });
-
-  // for handling in terminated state
-  final RemoteMessage? message =
-      await FirebaseMessaging.instance.getInitialMessage();
-
-  if (message != null) {
-    print("Launched from terminated state");
-    Future.delayed(Duration(seconds: 1), () {
-      navigatorKey.currentState!.pushNamed("/message", arguments: message);
-    });
-  }
-
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Sample Flutter Firebase Notifications',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      navigatorKey: navigatorKey,
-      routes: {
-        "/": (context) => CheckUser(),
-        "/signup": (context) => SignUpPage(),
-        "/login": (context) => LoginPage(),
-        "/home": (context) => HomePage(),
-        "/message": (context) => Message()
-      },
-    );
-  }
-}
-
-class CheckUser extends StatefulWidget {
-  const CheckUser({super.key});
-
-  @override
-  State<CheckUser> createState() => _CheckUserState();
-}
-
-class _CheckUserState extends State<CheckUser> {
-  @override
-  void initState() {
-    AuthService.isLoggedIn().then((value) {
-      if (value) {
-        Navigator.pushReplacementNamed(context, "/home");
-      } else {
-        Navigator.pushReplacementNamed(context, "/login");
-      }
-    });
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
-  }
-}
+A Dart VM Service on SM A236U1 is available at: http://127.0.0.1:51246/hRtRpwOiN8E=/
+The Flutter DevTools debugger and profiler on SM A236U1 is available at: http://127.0.0.1:9103?uri=http://127.0.0.1:51246/hRtRpwOiN8E=/

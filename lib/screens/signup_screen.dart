@@ -2,13 +2,13 @@ import 'dart:math';
 
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:student_app/screens/home_screen.dart';
 import 'package:student_app/screens/signin_screen.dart';
 import 'package:student_app/services/user_session.dart';
 import 'package:student_app/theme/theme.dart';
 import 'package:student_app/widgets/custom_scaffold.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../Dashboard/dashboard.dart';
 import '../firebase_authentication/firebase_auth_services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -516,7 +516,7 @@ final TextEditingController _emailController = TextEditingController();
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => const HomeScreen(),
+            builder: (context) => const DashBoard(),
           ),
         );
       } else {
@@ -614,7 +614,7 @@ final TextEditingController _emailController = TextEditingController();
         Fluttertoast.showToast(msg: "Google account already exists!");
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          MaterialPageRoute(builder: (context) => const DashBoard()),
         );
       } else {
         String defaultCounsellorId = await _getDefaultCounsellorId();
@@ -641,7 +641,7 @@ final TextEditingController _emailController = TextEditingController();
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          MaterialPageRoute(builder: (context) => const DashBoard()),
         );
       }
     } else {

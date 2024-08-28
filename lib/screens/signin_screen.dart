@@ -2,8 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:student_app/Dashboard/dashboard.dart';
 import 'package:student_app/screens/forgot_password_screen.dart';
-import 'package:student_app/screens/home_screen.dart';
 import 'package:student_app/screens/signup_screen.dart';
 import 'package:student_app/services/user_session.dart';
 import 'package:student_app/theme/theme.dart';
@@ -372,7 +372,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          MaterialPageRoute(builder: (context) => const DashBoard()),
         );
         Fluttertoast.showToast(msg: 'Sign in successful!');
       } else {
@@ -455,7 +455,7 @@ Future<Map<String, String>> _fetchStudentDetails(String userId) async {
 
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        MaterialPageRoute(builder: (context) => const DashBoard()),
       );
       Fluttertoast.showToast(msg: 'Sign in successful!');
     } else {
