@@ -27,7 +27,6 @@ class _IndividualChatPageState extends State<IndividualChatPage>
   final Map<String, AnimationController> _animationControllers = {};
   String? _replyingToMessage;
   String? _selectedMessageId;
-  String? _counselorName;
 
 
   @override
@@ -49,7 +48,6 @@ class _IndividualChatPageState extends State<IndividualChatPage>
     final userSession = UserSession();
     await userSession.loadSession();
     setState(() {
-      _counselorName = userSession.counselorName;
     });
 
     _markMessagesAsRead();

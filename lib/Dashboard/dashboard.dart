@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:shake/shake.dart';
 import 'package:student_app/Dashboard/Case%20Analysis/danger_zone.dart';
 import 'package:student_app/Dashboard/Case%20Analysis/help_request_service.dart';
 import 'package:student_app/Dashboard/Case%20Analysis/location_services.dart';
@@ -23,11 +24,29 @@ class _DashBoardState extends State<DashBoard> {
   final DangerZoneService _dangerZoneService = DangerZoneService();
   bool _helpRequested = false;
   StreamSubscription<String>? _statusSubscription;
+   ShakeDetector? _shakeDetector;
 
   @override
   void initState() {
     super.initState();
     _checkLocationPermission();
+    // Initialize ShakeDetector
+    _shakeDetector = ShakeDetector.autoStart(
+      onPhoneShake: () async {
+        if (!_helpRequested) {
+          await _sendHelpRequest();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Help request sent!'),
+            ),
+          );
+        }
+      },
+      minimumShakeCount: 1,
+      shakeSlopTimeMS: 500,
+      shakeCountResetTime: 3000,
+      shakeThresholdGravity: 2.7,
+    );
   }
 
   Future<void> _checkLocationPermission() async {
@@ -54,6 +73,7 @@ class _DashBoardState extends State<DashBoard> {
   @override
   void dispose() {
     _statusSubscription?.cancel();
+    _shakeDetector?.stopListening();
     super.dispose();
   }
 
@@ -156,12 +176,14 @@ class _DashBoardState extends State<DashBoard> {
                     width: 150,
                     height: 80,
                     decoration: BoxDecoration(
-                      color: const Color.fromARGB(214, 255, 255, 255), // Common background color
+                      color: const Color.fromARGB(
+                          214, 255, 255, 255), // Common background color
                       borderRadius:
                           BorderRadius.circular(12), // Rounded corners
                       boxShadow: [
                         BoxShadow(
-                          color: const Color.fromARGB(255, 61, 61, 61).withOpacity(0.2),
+                          color: const Color.fromARGB(255, 61, 61, 61)
+                              .withOpacity(0.2),
                           spreadRadius: 2,
                           blurRadius: 5,
                           offset: const Offset(0, 3), // Shadow position

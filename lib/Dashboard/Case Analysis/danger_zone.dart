@@ -23,10 +23,10 @@ class DangerZoneService {
         'timestamp': FieldValue.serverTimestamp(),
       });
 
-      Fluttertoast.showToast(msg:"Location added as danger zone: ${position.latitude}, ${position.longitude} with radius $radius");
-      Fluttertoast.showToast(msg: "Location added to Firestore as a danger zone.");
+      // Fluttertoast.showToast(msg:"Location added as danger zone: ${position.latitude}, ${position.longitude} with radius $radius");
+      // Fluttertoast.showToast(msg: "Location added to Firestore as a danger zone.");
     } catch (e) {
-      Fluttertoast.showToast(msg: "Failed to add location to Firestore: $e");
+      // Fluttertoast.showToast(msg: "Failed to add location to Firestore: $e");
       rethrow;
     }
   }
@@ -42,10 +42,10 @@ class DangerZoneService {
           radius: doc['radius'],
         );
       }).toList();
-      Fluttertoast.showToast(msg:"Fetched ${dangerZones.length} danger zones");
+      // Fluttertoast.showToast(msg:"Fetched ${dangerZones.length} danger zones");
       return dangerZones;
     } catch (e) {
-      Fluttertoast.showToast(msg:"Failed to fetch danger zones: $e");
+      // Fluttertoast.showToast(msg:"Failed to fetch danger zones: $e");
       Fluttertoast.showToast(msg: "Failed to fetch danger zones: $e");
       return [];
     }
@@ -68,4 +68,20 @@ class DangerZone {
     required this.longitude,
     required this.radius,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'latitude': latitude,
+      'longitude': longitude,
+      'radius': radius,
+    };
+  }
+
+  factory DangerZone.fromJson(Map<String, dynamic> json) {
+    return DangerZone(
+      latitude: json['latitude'],
+      longitude: json['longitude'],
+      radius: json['radius'],
+    );
+  }
 }

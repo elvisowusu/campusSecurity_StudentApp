@@ -5,7 +5,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:student_app/Dashboard/Case%20Analysis/location_services.dart';
 import '../../services/user_session.dart';
-//for proximity based notification 
 
 class HelpRequestService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -45,10 +44,10 @@ class HelpRequestService {
       });
 
       startLiveLocationUpdates(trackingId);
-      Fluttertoast.showToast(
-          msg: "Help request sent for $_studentName. Tracking ID: $trackingId");
+      // Fluttertoast.showToast(
+          // msg: "Help request sent for $_studentName. Tracking ID: $trackingId");
     } catch (e) {
-      Fluttertoast.showToast(msg: "An unknown error occurred.");
+      // Fluttertoast.showToast(msg: "An unknown error occurred.");
     }
   }
 
@@ -71,11 +70,11 @@ class HelpRequestService {
       try {
         await updateLiveLocation(trackingId, position);
       } catch (e) {
-        Fluttertoast.showToast(msg: "Error updating live location: $e");
+        // Fluttertoast.showToast(msg: "Error updating live location: $e");
         _scheduleReconnection();
       }
     }, onError: (error) {
-      Fluttertoast.showToast(msg: "Location stream error: $error");
+      // Fluttertoast.showToast(msg: "Location stream error: $error");
       _scheduleReconnection();
     });
   }
@@ -135,7 +134,7 @@ class HelpRequestService {
     _positionStreamSubscription?.cancel();
     _reconnectionTimer?.cancel();
     _currentTrackingId = null;
-    Fluttertoast.showToast(msg: "Help request ended for $_studentName");
+    // Fluttertoast.showToast(msg: "Help request ended for $_studentName");
   }
 
   Future<void> _ensureInitialized() async {
