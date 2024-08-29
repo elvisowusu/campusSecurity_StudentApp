@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:student_app/dashboard/speak%20to%20counsellor/individual_chat_room.dart';
 
 class ChatIconButton extends StatelessWidget {
@@ -13,9 +12,13 @@ class ChatIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<DocumentSnapshot>(
-      stream: _firestore.collection('students').doc(currentUser!.uid).snapshots(),
-      builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-        if (!snapshot.hasData || snapshot.data == null || !snapshot.data!.exists) {
+      stream:
+          _firestore.collection('students').doc(currentUser!.uid).snapshots(),
+      builder:
+          (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+        if (!snapshot.hasData ||
+            snapshot.data == null ||
+            !snapshot.data!.exists) {
           return const IconButton(
             icon: Icon(Icons.chat_rounded),
             tooltip: 'Loading...',
@@ -44,7 +47,8 @@ class ChatIconButton extends StatelessWidget {
               .where('read', isEqualTo: false)
               .snapshots(),
           builder: (context, messageSnapshot) {
-            int unreadCount = messageSnapshot.hasData ? messageSnapshot.data!.docs.length : 0;
+            int unreadCount =
+                messageSnapshot.hasData ? messageSnapshot.data!.docs.length : 0;
 
             return Stack(
               children: [
@@ -55,33 +59,43 @@ class ChatIconButton extends StatelessWidget {
                           await Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => IndividualChatPage(contactId: counselorId),
+                              builder: (context) =>
+                                  IndividualChatPage(contactId: counselorId),
                             ),
                           );
                           // Clear the unread count after navigation
                           _clearUnreadCount(counselorId);
                         },
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Container(
-                        padding: const EdgeInsets.all(9.0),
-                        decoration: BoxDecoration(
-                          color: Colors.transparent,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.white,
-                            width: 2.0,
-                          ),
+                  child: Container(
+                    width: 150,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(214, 255, 255, 255), // Common background color
+                      borderRadius:
+                          BorderRadius.circular(12), // Rounded corners
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color.fromARGB(255, 61, 61, 61).withOpacity(0.2),
+                          spreadRadius: 2,
+                          blurRadius: 5,
+                          offset: const Offset(0, 3), // Shadow position
                         ),
-                        child: SvgPicture.asset(
-                          'assets/chat.svg',
-                          color: Colors.white,
-                          width: 20,
-                          height: 20,
-                        ),
+                      ],
+                    ),
+                    child: const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.chat_rounded,
+                              size: 32, color: Colors.blue),
+                          Text(
+                            'Report Case',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Colors.black),
+                          )
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
                 if (unreadCount > 0)

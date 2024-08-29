@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:student_app/common/enum/message_type.dart';
 import 'package:keyboard_dismisser/keyboard_dismisser.dart';
 import '../../services/user_session.dart';
+import '../../widgets/custom_appbar.dart';
 
 class IndividualChatPage extends StatefulWidget {
   final String contactId;
@@ -394,11 +395,8 @@ class _IndividualChatPageState extends State<IndividualChatPage>
         GestureType.onPanUpdateDownDirection,
       ],
       child: Scaffold(
-          appBar: AppBar(
-            title: _selectedMessageId == null
-                ? Text('$_counselorName')
-                : buildAppBarActions(_selectedMessageId, context, setState),
-          ),
+          appBar:_selectedMessageId == null?
+           const MyAppBar(title: 'Chat with Counselor',) :AppBar(title:buildAppBarActions(_selectedMessageId, context, setState),),
           body: Container(
             decoration: const BoxDecoration(
               image: DecorationImage(

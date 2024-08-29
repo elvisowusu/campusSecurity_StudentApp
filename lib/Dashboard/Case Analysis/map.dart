@@ -138,7 +138,7 @@ class _MapPageState extends State<MapPage> {
     return Scaffold(
       body: _currentPosition != null
           ? GoogleMap(
-              mapType: MapType.hybrid,
+              mapType: MapType.normal,
               onMapCreated: (controller) {
                 _mapController = controller;
               },

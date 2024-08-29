@@ -9,6 +9,8 @@ import 'package:student_app/Dashboard/Case%20Analysis/location_services.dart';
 import 'package:student_app/Dashboard/Case%20Analysis/map.dart';
 import 'package:student_app/Dashboard/speak%20to%20counsellor/chat_icon_button.dart';
 
+import '../widgets/custom_appbar.dart';
+
 class DashBoard extends StatefulWidget {
   const DashBoard({super.key});
 
@@ -91,6 +93,9 @@ class _DashBoardState extends State<DashBoard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: const MyAppBar(
+        title: 'Campus Safety',
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -105,15 +110,19 @@ class _DashBoardState extends State<DashBoard> {
                   color: _helpRequested ? Colors.green : Colors.red,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.red.withOpacity(0.2),
-                      spreadRadius: 10,
-                      blurRadius: 20,
-                      offset: const Offset(0, 4),
+                      color: _helpRequested
+                          ? Colors.green.withOpacity(0.1)
+                          : Colors.red.withOpacity(0.1),
+                      spreadRadius: 20,
+                      blurRadius: 25,
+                      offset: const Offset(0, 7),
                     ),
                     BoxShadow(
-                      color: Colors.red.withOpacity(0.3),
-                      spreadRadius: 15,
-                      blurRadius: 30,
+                      color: _helpRequested
+                          ? Colors.green.withOpacity(0.3)
+                          : Colors.red.withOpacity(0.3),
+                      spreadRadius: 25,
+                      blurRadius: 35,
                       offset: const Offset(0, 9),
                     ),
                   ],
@@ -131,55 +140,50 @@ class _DashBoardState extends State<DashBoard> {
                 ),
               ),
             ),
-            const SizedBox(height: 70),
+            const SizedBox(
+              height: 70,
+              width: 90,
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 GestureDetector(
                   onTap: () {
-                    Navigator.push(
-                        context, MaterialPageRoute(builder: (e) => const MapPage()));
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (e) => const MapPage()));
                   },
                   child: Container(
-                    width: 80,
+                    width: 150,
                     height: 80,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.rectangle,
-                      color: Colors.white,
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(214, 255, 255, 255), // Common background color
+                      borderRadius:
+                          BorderRadius.circular(12), // Rounded corners
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color.fromARGB(255, 61, 61, 61).withOpacity(0.2),
+                          spreadRadius: 2,
+                          blurRadius: 5,
+                          offset: const Offset(0, 3), // Shadow position
+                        ),
+                      ],
                     ),
                     child: const Center(
                       child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.emergency, size: 32, color: Colors.red),
-                          Text("Danger Zones",textAlign: TextAlign.center,)
+                          Text(
+                            "Danger Zones",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Colors.black),
+                          ),
                         ],
                       ),
                     ),
                   ),
                 ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (e) => ChatIconButton()));
-                  },
-                  child: Container(
-                    width: 80,
-                    height: 80,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.rectangle,
-                      color: Colors.white,
-                    ),
-                    child: const Center(
-                      child: Column(
-                        children: [
-                          Icon(Icons.chat_rounded,
-                              size: 32, color: Colors.blue),
-                          Text('Report Case',textAlign: TextAlign.center,)
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+                ChatIconButton(),
               ],
             ),
           ],
