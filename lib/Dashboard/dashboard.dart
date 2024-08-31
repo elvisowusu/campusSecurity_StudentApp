@@ -24,13 +24,16 @@ class _DashBoardState extends State<DashBoard> {
   final DangerZoneService _dangerZoneService = DangerZoneService();
   bool _helpRequested = false;
   StreamSubscription<String>? _statusSubscription;
-   ShakeDetector? _shakeDetector;
+  ShakeDetector? _shakeDetector;
 
   @override
   void initState() {
     super.initState();
     _checkLocationPermission();
-    // Initialize ShakeDetector
+    _initializeShakeDetector();
+  }
+
+  void _initializeShakeDetector() {
     _shakeDetector = ShakeDetector.autoStart(
       onPhoneShake: () async {
         if (!_helpRequested) {
@@ -40,9 +43,15 @@ class _DashBoardState extends State<DashBoard> {
               content: Text('Help request sent!'),
             ),
           );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('A help request is already active.'),
+            ),
+          );
         }
       },
-      minimumShakeCount: 1,
+      minimumShakeCount: 4,
       shakeSlopTimeMS: 500,
       shakeCountResetTime: 3000,
       shakeThresholdGravity: 2.7,
@@ -54,8 +63,6 @@ class _DashBoardState extends State<DashBoard> {
     if (permission == LocationPermission.denied ||
         permission == LocationPermission.deniedForever) {
       _requestLocationPermission();
-    } else {
-      // Permission already granted, proceed with the app logic
     }
   }
 
@@ -78,6 +85,11 @@ class _DashBoardState extends State<DashBoard> {
   }
 
   Future<void> _sendHelpRequest() async {
+    if (_helpRequested) {
+      Fluttertoast.showToast(msg: 'A help request is already active.');
+      return;
+    }
+
     setState(() {
       _helpRequested = true;
     });
@@ -97,15 +109,16 @@ class _DashBoardState extends State<DashBoard> {
           Fluttertoast.showToast(msg: 'Help request resolved');
         }
       });
-      Position position = await _locationService.getCurrentPosition();
 
-      // Store the location as a danger zone
+      Position position = await _locationService.getCurrentPosition();
       await _dangerZoneService.storeLocationAsDangerZone(position);
 
       // Simulate a delay for demonstration purposes
       await Future.delayed(const Duration(seconds: 3));
     } catch (e) {
-      // Handle any errors that occurred during the help request
+      setState(() {
+        _helpRequested = false;
+      });
       Fluttertoast.showToast(msg: 'Error sending help request: $e');
     }
   }

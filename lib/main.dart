@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:ui';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:student_app/Dashboard/Case%20Analysis/danger.dart';
@@ -12,7 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:shake/shake.dart';
-import 'package:workmanager/workmanager.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -24,41 +27,101 @@ Future _firebaseBackgroundMessage(RemoteMessage message) async {
   }
 }
 
-// Background task handler
-void callbackDispatcher() {
-  Workmanager().executeTask((task, inputData) async {
-    switch (task) {
-      case 'backgroundShakeDetection':
-        await _initializeShakeDetection();
-        break;
+@pragma('vm:entry-point')
+void onStart(ServiceInstance service) async {
+  DartPluginRegistrant.ensureInitialized();
+
+  try {
+    if (service is AndroidServiceInstance) {
+      service.on('setAsForeground').listen((event) {
+        service.setAsForegroundService();
+      });
+      service.on('setAsBackground').listen((event) {
+        service.setAsBackgroundService();
+      });
     }
-    return Future.value(true);
-  });
+
+    service.on('stopService').listen((event) {
+      service.stopSelf();
+    });
+
+    // Initialize Firebase (if not already initialized)
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
+
+    final helpRequestService = HelpRequestService();
+    await helpRequestService.initialize();
+
+    ShakeDetector detector = ShakeDetector.autoStart(
+      onPhoneShake: () async {
+        try {
+          await helpRequestService.sendHelpRequest();
+          await NotificationService.showInstantNotification(
+            'Emergency Alert',
+            'Help request sent due to phone shake.',
+          );
+        } catch (e) {
+          print('Error in shake detection: $e');
+          // Consider sending an error report or retrying
+        }
+      },
+      minimumShakeCount: 4,
+      shakeSlopTimeMS: 500,
+      shakeCountResetTime: 3000,
+      shakeThresholdGravity: 2.7,
+    );
+
+    // Start danger zone monitoring
+    final dangerZoneNotifier = DangerZoneNotifier();
+    dangerZoneNotifier.startBackgroundLocationUpdates();
+
+    Timer.periodic(const Duration(minutes: 15), (timer) async {
+      if (service is AndroidServiceInstance) {
+        if (await service.isForegroundService()) {
+          service.setForegroundNotificationInfo(
+            title: "Safety Monitoring Active",
+            content: "Monitoring for emergencies",
+          );
+        }
+      }
+      service.invoke('update');
+    });
+
+  } catch (e) {
+    print('Error in background service: $e');
+    // Consider sending an error report
+  }
 }
 
-Future<void> _initializeShakeDetection() async {
-  ShakeDetector detector = ShakeDetector.autoStart(
-    onPhoneShake: () async {
-      // Send help request
-      final helpRequestService = HelpRequestService();
-      await helpRequestService.initialize();
-      await helpRequestService.sendHelpRequest();
+Future<void> initializeService() async {
+  final service = FlutterBackgroundService();
 
-      // Show a notification
-      await NotificationService.showInstantNotification(
-        'Emergency Alert',
-        'Help request sent due to phone shake.',
-      );
-    },
-    minimumShakeCount: 1,
-    shakeSlopTimeMS: 500,
-    shakeCountResetTime: 3000,
-    shakeThresholdGravity: 2.7,
+  await service.configure(
+    androidConfiguration: AndroidConfiguration(
+      onStart: onStart,
+      autoStart: true,
+      isForegroundMode: true,
+    ),
+    iosConfiguration: IosConfiguration(
+      autoStart: true,
+      onForeground: onStart,
+      onBackground: onIosBackground,
+    ),
   );
 
-  // Keep the detector running for a certain duration
-  await Future.delayed(const Duration(hours: 1));
-  detector.stopListening();
+  service.startService();
+}
+
+// iOS background fetch
+@pragma('vm:entry-point')
+Future<bool> onIosBackground(ServiceInstance service) async {
+  WidgetsFlutterBinding.ensureInitialized();
+  DartPluginRegistrant.ensureInitialized();
+
+  return true;
 }
 
 Future<void> main() async {
@@ -79,19 +142,8 @@ Future<void> main() async {
   await NotificationService.init();
   await NotificationService.localNotInit();
 
-  // Initialize Workmanager
-  await Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
-
-  // Register periodic task for background shake detection
-  await Workmanager().registerPeriodicTask(
-    "backgroundShakeDetection",
-    "backgroundShakeDetection",
-    frequency: const Duration(minutes: 15),
-    constraints: Constraints(
-      networkType: NetworkType.connected,
-      requiresBatteryNotLow: true,
-    ),
-  );
+  // Initialize background service
+  await initializeService();
 
   runApp(
     const ProviderScope(
