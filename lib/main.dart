@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:student_app/Dashboard/Case%20Analysis/danger.dart';
 import 'package:student_app/Dashboard/dashboard.dart';
-
+import 'package:student_app/Dashboard/Case%20Analysis/help_request_service.dart';
 import 'package:student_app/firebase_options.dart';
 import 'package:student_app/screens/splash_screen.dart';
 import 'package:student_app/services/local_notification_services.dart';
@@ -11,6 +11,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:timezone/data/latest.dart' as tz;
+import 'package:shake/shake.dart';
+import 'package:workmanager/workmanager.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -20,6 +22,43 @@ Future _firebaseBackgroundMessage(RemoteMessage message) async {
     print(
         'Something received in the background: ${message.notification?.title}');
   }
+}
+
+// Background task handler
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    switch (task) {
+      case 'backgroundShakeDetection':
+        await _initializeShakeDetection();
+        break;
+    }
+    return Future.value(true);
+  });
+}
+
+Future<void> _initializeShakeDetection() async {
+  ShakeDetector detector = ShakeDetector.autoStart(
+    onPhoneShake: () async {
+      // Send help request
+      final helpRequestService = HelpRequestService();
+      await helpRequestService.initialize();
+      await helpRequestService.sendHelpRequest();
+
+      // Show a notification
+      await NotificationService.showInstantNotification(
+        'Emergency Alert',
+        'Help request sent due to phone shake.',
+      );
+    },
+    minimumShakeCount: 1,
+    shakeSlopTimeMS: 500,
+    shakeCountResetTime: 3000,
+    shakeThresholdGravity: 2.7,
+  );
+
+  // Keep the detector running for a certain duration
+  await Future.delayed(const Duration(hours: 1));
+  detector.stopListening();
 }
 
 Future<void> main() async {
@@ -39,6 +78,20 @@ Future<void> main() async {
   // Initialize notification service
   await NotificationService.init();
   await NotificationService.localNotInit();
+
+  // Initialize Workmanager
+  await Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
+
+  // Register periodic task for background shake detection
+  await Workmanager().registerPeriodicTask(
+    "backgroundShakeDetection",
+    "backgroundShakeDetection",
+    frequency: const Duration(minutes: 15),
+    constraints: Constraints(
+      networkType: NetworkType.connected,
+      requiresBatteryNotLow: true,
+    ),
+  );
 
   runApp(
     const ProviderScope(
