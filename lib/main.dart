@@ -4,7 +4,6 @@ import 'package:student_app/Dashboard/Case%20Analysis/danger.dart';
 import 'package:student_app/Dashboard/dashboard.dart';
 
 import 'package:student_app/firebase_options.dart';
-import 'package:student_app/screens/home_screen.dart';
 import 'package:student_app/screens/splash_screen.dart';
 import 'package:student_app/services/local_notification_services.dart';
 import 'package:student_app/theme/theme.dart';
@@ -42,8 +41,8 @@ Future<void> main() async {
   await NotificationService.localNotInit();
 
   runApp(
-    ProviderScope(
-      child: const MyApp(),
+    const ProviderScope(
+      child: MyApp(),
     ),
   );
 }

@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:student_app/Dashboard/Case%20Analysis/location_services.dart';
+import '../../services/new.dart';
 import '../../services/user_session.dart';
 
 class HelpRequestService {
@@ -30,7 +32,8 @@ class HelpRequestService {
       Position position = await _locationService.getCurrentPosition();
       String trackingId = DateTime.now().millisecondsSinceEpoch.toString();
       _currentTrackingId = trackingId;
-
+     // Get the FCM token for the student
+      String? fcmToken = await FirebaseMessaging.instance.getToken();
       await _firestore.collection('help_requests').doc(trackingId).set({
         'studentUid': _studentUid!,
         'studentName': _studentName!,
@@ -41,13 +44,48 @@ class HelpRequestService {
         'trackingId': trackingId,
         'status': 'active',
         'isRead': false,
+        'studentFcmToken': fcmToken,
       });
+           // Instead of sending to all police officers, find the nearest one
+      await _sendNotificationToNearestPoliceOfficer(position, trackingId);
 
       startLiveLocationUpdates(trackingId);
-      // Fluttertoast.showToast(
-          // msg: "Help request sent for $_studentName. Tracking ID: $trackingId");
+      Fluttertoast.showToast(
+          msg: "Help request sent for $_studentName. Tracking ID: $trackingId");
     } catch (e) {
-      // Fluttertoast.showToast(msg: "An unknown error occurred.");
+      Fluttertoast.showToast(msg: "An unknown error occurred.");
+    }
+  }
+
+  Future<void> _sendNotificationToNearestPoliceOfficer(Position studentPosition, String trackingId) async {
+    // Query for police officers, ordered by distance to the student
+    QuerySnapshot policeOfficers = await _firestore.collection('police_officers')
+        .get();
+    
+    double closestDistance = double.infinity;
+    String? closestOfficerToken;
+
+    for (var doc in policeOfficers.docs) {
+      GeoPoint officerLocation = doc['location'];
+      double distance = Geolocator.distanceBetween(
+        studentPosition.latitude,
+        studentPosition.longitude,
+        officerLocation.latitude,
+        officerLocation.longitude
+      );
+
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestOfficerToken = doc['fcmToken'];
+      }
+    }
+      if (closestOfficerToken != null) {
+      await NotificationServices.sendNotificationToSelectedPolice(
+        closestOfficerToken,
+        trackingId,
+      );
+    } else {
+      Fluttertoast.showToast(msg: "No nearby police officers found.");
     }
   }
 
@@ -70,11 +108,11 @@ class HelpRequestService {
       try {
         await updateLiveLocation(trackingId, position);
       } catch (e) {
-        // Fluttertoast.showToast(msg: "Error updating live location: $e");
+        Fluttertoast.showToast(msg: "Error updating live location: $e");
         _scheduleReconnection();
       }
     }, onError: (error) {
-      // Fluttertoast.showToast(msg: "Location stream error: $error");
+      Fluttertoast.showToast(msg: "Location stream error: $error");
       _scheduleReconnection();
     });
   }
