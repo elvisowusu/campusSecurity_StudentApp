@@ -65,7 +65,7 @@ class DangerZoneNotifier extends StateNotifier<bool> {
   void _showNotification() {
     final now = DateTime.now();
     if (_lastDangerAlertTime == null ||
-        now.difference(_lastDangerAlertTime!) > const Duration(minutes: 1)) {
+        now.difference(_lastDangerAlertTime!) > const Duration(minutes: 5)) {
       NotificationService.showInstantNotification(
           'Warning', "You are in a danger zone");
       _lastDangerAlertTime = now;
