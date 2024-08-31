@@ -105,7 +105,7 @@ class AppInitializer {
             print('Error in shake detection: $e');
           }
         },
-        minimumShakeCount: 5,
+        minimumShakeCount: 4,
         shakeSlopTimeMS: 500,
         shakeCountResetTime: 3000,
         shakeThresholdGravity: 2.7,
@@ -114,7 +114,7 @@ class AppInitializer {
       final dangerZoneNotifier = DangerZoneNotifier();
       dangerZoneNotifier.startBackgroundLocationUpdates();
 
-      Timer.periodic(const Duration(minutes: 15), (timer) async {
+      Timer.periodic(const Duration(minutes: 5), (timer) async {
         if (service is AndroidServiceInstance) {
           if (await service.isForegroundService()) {
             service.setForegroundNotificationInfo(
