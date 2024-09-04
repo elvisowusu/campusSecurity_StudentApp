@@ -70,12 +70,14 @@ class ChatIconButton extends StatelessWidget {
                     width: 150,
                     height: 80,
                     decoration: BoxDecoration(
-                      color: const Color.fromARGB(214, 255, 255, 255), // Common background color
+                      color: const Color.fromARGB(
+                          214, 255, 255, 255), // Common background color
                       borderRadius:
                           BorderRadius.circular(12), // Rounded corners
                       boxShadow: [
                         BoxShadow(
-                          color: const Color.fromARGB(255, 61, 61, 61).withOpacity(0.2),
+                          color: const Color.fromARGB(255, 61, 61, 61)
+                              .withOpacity(0.2),
                           spreadRadius: 2,
                           blurRadius: 5,
                           offset: const Offset(0, 3), // Shadow position
@@ -89,7 +91,7 @@ class ChatIconButton extends StatelessWidget {
                           Icon(Icons.chat_rounded,
                               size: 32, color: Colors.blue),
                           Text(
-                            'Report Case',
+                            'Counselor',
                             textAlign: TextAlign.center,
                             style: TextStyle(color: Colors.black),
                           )
