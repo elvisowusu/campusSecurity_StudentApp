@@ -7,11 +7,9 @@ import 'package:student_app/services/local_notification_services.dart';
 
 class DangerZoneNotifier extends StateNotifier<bool> {
   DangerZoneNotifier() : super(false) {
-    _locationService = LocationService();
     _dangerZoneService = DangerZoneService();
   }
-
-  late final LocationService _locationService;
+   late final LocationService _locationService;
   late final DangerZoneService _dangerZoneService;
   List<DangerZone> _dangerZones = [];
   Position? _currentPosition;

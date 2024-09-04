@@ -26,6 +26,12 @@ class _DashBoardState extends State<DashBoard> {
   StreamSubscription<String>? _statusSubscription;
   ShakeDetector? _shakeDetector;
 
+  DateTime? _lastHelpRequestTime;
+  static const Duration _cooldownDuration = Duration(minutes: 30);
+  int _currentShakeCount = 0;
+  DateTime? _shakeStartTime;
+  static const int _requiredShakeCount = 6;
+
   @override
   void initState() {
     super.initState();
@@ -36,22 +42,35 @@ class _DashBoardState extends State<DashBoard> {
   void _initializeShakeDetector() {
     _shakeDetector = ShakeDetector.autoStart(
       onPhoneShake: () async {
-        if (!_helpRequested) {
-          await _sendHelpRequest();
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Help request sent!'),
-            ),
-          );
+        final now = DateTime.now();
+
+        // Initialize or reset shake count if it's a new shake session
+        if (_shakeStartTime == null ||
+            now.difference(_shakeStartTime!) > const Duration(seconds: 3)) {
+          _currentShakeCount = 1;
+          _shakeStartTime = now;
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('A help request is already active.'),
-            ),
-          );
+          _currentShakeCount++;
+        }
+
+        if (_currentShakeCount >= _requiredShakeCount) {
+          // Check if we're still in the cooldown period
+          if (_lastHelpRequestTime != null &&
+              now.difference(_lastHelpRequestTime!) < _cooldownDuration) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content:
+                    Text('Please wait before sending another help request.'),
+              ),
+            );
+            return;
+          }
+
+          await _sendHelpRequest();
+          _currentShakeCount = 0; // Reset shake count after attempt
         }
       },
-      minimumShakeCount: 4,
+      minimumShakeCount: 1, // We're manually counting shakes now
       shakeSlopTimeMS: 500,
       shakeCountResetTime: 3000,
       shakeThresholdGravity: 2.7,
@@ -70,10 +89,10 @@ class _DashBoardState extends State<DashBoard> {
     LocationPermission permission = await Geolocator.requestPermission();
     if (permission == LocationPermission.denied ||
         permission == LocationPermission.deniedForever) {
-      Fluttertoast.showToast(
-          msg: "Location permission denied. Cannot send help request.");
+      // Fluttertoast.showToast(
+      //     msg: "Location permission denied. Cannot send help request.");
     } else {
-      Fluttertoast.showToast(msg: "Location permission granted.");
+      // Fluttertoast.showToast(msg: "Location permission granted.");
     }
   }
 
@@ -86,7 +105,7 @@ class _DashBoardState extends State<DashBoard> {
 
   Future<void> _sendHelpRequest() async {
     if (_helpRequested) {
-      Fluttertoast.showToast(msg: 'A help request is already active.');
+      // Fluttertoast.showToast(msg: 'A help request is already active.');
       return;
     }
 
@@ -99,6 +118,8 @@ class _DashBoardState extends State<DashBoard> {
       await helpRequestService.initialize();
       await helpRequestService.sendHelpRequest();
 
+      _lastHelpRequestTime = DateTime.now(); // Update last request time
+
       _statusSubscription =
           helpRequestService.getHelpRequestStatus().listen((status) {
         if (status == 'resolved') {
@@ -106,12 +127,18 @@ class _DashBoardState extends State<DashBoard> {
           setState(() {
             _helpRequested = false;
           });
-          Fluttertoast.showToast(msg: 'Help request resolved');
+          // Fluttertoast.showToast(msg: 'Help request resolved');
         }
       });
 
       Position position = await _locationService.getCurrentPosition();
       await _dangerZoneService.storeLocationAsDangerZone(position);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Help request sent!'),
+        ),
+      );
 
       // Simulate a delay for demonstration purposes
       await Future.delayed(const Duration(seconds: 3));
@@ -119,7 +146,7 @@ class _DashBoardState extends State<DashBoard> {
       setState(() {
         _helpRequested = false;
       });
-      Fluttertoast.showToast(msg: 'Error sending help request: $e');
+      // Fluttertoast.showToast(msg: 'Error sending help request: $e');
     }
   }
 
