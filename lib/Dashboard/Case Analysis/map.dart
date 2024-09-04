@@ -79,7 +79,6 @@ class _MapPageState extends State<MapPage> {
 
       // Check if user is in a danger zone
       if (_isInDangerZone(position)) {
-        
         _showNotification();
       }
     });
@@ -94,7 +93,6 @@ class _MapPageState extends State<MapPage> {
       _lastDangerAlertTime = now;
     }
   }
-
 
   void _updateCameraPosition() {
     if (_currentPosition != null && _mapController != null) {

@@ -46,7 +46,7 @@ class DangerZoneService {
       return dangerZones;
     } catch (e) {
       // Fluttertoast.showToast(msg:"Failed to fetch danger zones: $e");
-      Fluttertoast.showToast(msg: "Failed to fetch danger zones: $e");
+      // Fluttertoast.showToast(msg: "Failed to fetch danger zones: $e");
       return [];
     }
   }
