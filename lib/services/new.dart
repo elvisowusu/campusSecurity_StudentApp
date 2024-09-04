@@ -72,7 +72,7 @@ class NotificationServices {
     if(response.statusCode == 200){
       Fluttertoast.showToast(msg: "swiftSOS sent");
     } else{
-      Fluttertoast.showToast(msg: "Failed to send FCM message: ${response.statusCode}");
+      // Fluttertoast.showToast(msg: "Failed to send FCM message: ${response.statusCode}");
     }
   }
 }

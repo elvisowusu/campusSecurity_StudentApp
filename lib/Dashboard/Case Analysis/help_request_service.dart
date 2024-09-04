@@ -50,10 +50,10 @@ class HelpRequestService {
       await _sendNotificationToNearestPoliceOfficer(position, trackingId);
 
       startLiveLocationUpdates(trackingId);
-      Fluttertoast.showToast(
-          msg: "Help request sent for $_studentName. Tracking ID: $trackingId");
+      // Fluttertoast.showToast(
+      //     msg: "Help request sent for $_studentName. Tracking ID: $trackingId");
     } catch (e) {
-      Fluttertoast.showToast(msg: "An unknown error occurred.");
+      // Fluttertoast.showToast(msg: "An unknown error occurred.");
     }
   }
 
@@ -85,7 +85,7 @@ class HelpRequestService {
         trackingId,
       );
     } else {
-      Fluttertoast.showToast(msg: "No nearby police officers found.");
+      // Fluttertoast.showToast(msg: "No nearby police officers found.");
     }
   }
 
